@@ -1,4 +1,4 @@
-package ru.gr05307.math
+package app.math
 
 import kotlin.math.absoluteValue
 import kotlin.math.sqrt

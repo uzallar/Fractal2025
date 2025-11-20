@@ -1,4 +1,4 @@
-package ru.gr05307.painting.convertation
+package app.painting.convertation
 
 object Converter {
 

@@ -1,14 +1,14 @@
-package ru.gr05307.painting
+package app.painting
 
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import kotlinx.coroutines.coroutineScope
-import ru.gr05307.fractal.Mandelbrot
-import ru.gr05307.math.Complex
-import ru.gr05307.painting.convertation.Converter
-import ru.gr05307.painting.convertation.Plain
+import app.fractal.Mandelbrot
+import app.math.Complex
+import app.painting.convertation.Converter
+import app.painting.convertation.Plain
 import kotlin.concurrent.thread
 import kotlin.math.absoluteValue
 import kotlin.math.cos

@@ -1,4 +1,4 @@
-package ru.gr05307.ui
+package app.ui
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.ExperimentalFoundationApi

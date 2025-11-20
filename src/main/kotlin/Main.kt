@@ -6,9 +6,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
-import ru.gr05307.ui.PaintPanel
-import ru.gr05307.ui.SelectionPanel
-import ru.gr05307.viewmodels.MainViewModel
+import app.ui.PaintPanel
+import app.ui.SelectionPanel
+import app.viewmodels.MainViewModel
 
 @Composable
 @Preview

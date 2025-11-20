@@ -1,4 +1,4 @@
-package ru.gr05307.viewmodels
+package app.viewmodels
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -17,9 +17,9 @@ import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
-import ru.gr05307.painting.FractalPainter
-import ru.gr05307.painting.convertation.Converter
-import ru.gr05307.painting.convertation.Plain
+import app.painting.FractalPainter
+import app.painting.convertation.Converter
+import app.painting.convertation.Plain
 
 class MainViewModel{
     var fractalImage: ImageBitmap = ImageBitmap(0, 0)

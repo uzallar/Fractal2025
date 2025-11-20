@@ -1,4 +1,4 @@
-package ru.gr05307.painting
+package app.painting
 
 import androidx.compose.ui.graphics.drawscope.DrawScope
 

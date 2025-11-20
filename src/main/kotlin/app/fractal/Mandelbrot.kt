@@ -1,6 +1,6 @@
-package ru.gr05307.fractal
+package app.fractal
 
-import ru.gr05307.math.Complex
+import app.math.Complex
 
 class Mandelbrot(
     val nMax: Int = 200,
