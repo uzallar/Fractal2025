@@ -9,11 +9,10 @@ import androidx.compose.ui.window.application
 import app.ui.PaintPanel
 import app.ui.SelectionPanel
 import app.viewmodels.MainViewModel
-import kotlin.math.pow
 
 @Composable
 @Preview
-fun App(viewModel: MainViewModel= MainViewModel()) {
+fun App(viewModel: MainViewModel = MainViewModel()) {
     MaterialTheme {
         Box {
             PaintPanel(
@@ -44,12 +43,7 @@ fun main(): Unit = application {
         App()
     }
     student2Print()
-    student1Print()
-    student3Print()
-    student5Print()
-    student6Print()
 }
-
 
 private fun student2Print() {
     val x = 7
@@ -58,33 +52,3 @@ private fun student2Print() {
     println("Student 2: $x * $y = $product")
 }
 
-
-
-private fun student1Print() {
-    val a = 5
-    val b = 3
-    val sum = a + b
-    println("Student 1: $a + $b = $sum")
-}
-
-private fun student3Print() {
-    val a = 15
-    val b = 4
-    val difference = a - b
-    println("Student 3: $a - $b = $difference")
-}
-
-private fun student5Print() {
-    val base = 2
-    val exponent = 5
-    val power = base.toDouble().pow(exponent.toDouble()).toInt()
-    println("Student 5: $base^$exponent = $power")
-//привет привет :)
-}
-
-private fun student6Print() {
-    val dividend = 17
-    val divisor = 5
-    val remainder = dividend % divisor
-    println("Student 6: $dividend % $divisor = $remainder")
-}
