@@ -42,6 +42,16 @@ fun main(): Unit = application {
     ) {
         App()
     }
+    student2Print()
 }
 
 // пробный коммит
+
+
+private fun student2Print() {
+    val x = 7
+    val y = 8
+    val product = x * y
+    println("Student 2: $x * $y = $product")
+}
+
