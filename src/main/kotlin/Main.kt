@@ -43,8 +43,9 @@ fun main(): Unit = application {
         App()
     }
     student2Print()
-    student1Print()
 }
+
+// пробный коммит
 
 
 private fun student2Print() {
@@ -54,10 +55,3 @@ private fun student2Print() {
     println("Student 2: $x * $y = $product")
 }
 
-
-private fun student1Print() {
-    val a = 5
-    val b = 3
-    val sum = a + b
-    println("Student 1: $a + $b = $sum")
-}
