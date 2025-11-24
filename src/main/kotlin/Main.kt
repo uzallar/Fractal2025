@@ -12,7 +12,7 @@ import app.viewmodels.MainViewModel
 
 @Composable
 @Preview
-fun App(viewModel: MainViewModel = MainViewModel()) {
+fun App(viewModel: MainViewModel= MainViewModel()) {
     MaterialTheme {
         Box {
             PaintPanel(
@@ -44,6 +44,9 @@ fun main(): Unit = application {
     }
     student2Print()
 }
+
+// пробный коммит
+// что-то еще
 
 private fun student2Print() {
     val x = 7
