@@ -48,6 +48,7 @@ fun main(): Unit = application {
     student3Print()
     student5Print()
     student6Print()
+    student8Print()
 }
 
 // пробный коммит
@@ -92,4 +93,9 @@ private fun student6Print() {
     val divisor = 5
     val remainder = dividend % divisor
     println("Student 6: $dividend % $divisor = $remainder")
+}
+
+private fun student8Print() {
+    val pi = Math.PI
+    println("Student 8: PI = ${"%.4f".format(pi)}")
 }
