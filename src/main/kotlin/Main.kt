@@ -47,6 +47,7 @@ fun main(): Unit = application {
     student1Print()
     student3Print()
     student5Print()
+    student6Print()
 }
 
 // пробный коммит
@@ -61,6 +62,7 @@ private fun student2Print() {
     val product = x * y
     println("Student 2: $x * $y = $product")
 }
+
 
 
 private fun student1Print() {
@@ -83,4 +85,11 @@ private fun student5Print() {
     val power = base.toDouble().pow(exponent.toDouble()).toInt()
     println("Student 5: $base^$exponent = $power")
 //привет привет :)
+}
+
+private fun student6Print() {
+    val dividend = 17
+    val divisor = 5
+    val remainder = dividend % divisor
+    println("Student 6: $dividend % $divisor = $remainder")
 }
