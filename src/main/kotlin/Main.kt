@@ -9,6 +9,7 @@ import androidx.compose.ui.window.application
 import app.ui.PaintPanel
 import app.ui.SelectionPanel
 import app.viewmodels.MainViewModel
+import kotlin.math.pow
 
 @Composable
 @Preview
@@ -45,6 +46,7 @@ fun main(): Unit = application {
     student2Print()
     student1Print()
     student3Print()
+    student5Print()
 }
 
 // пробный коммит
@@ -68,11 +70,17 @@ private fun student1Print() {
     println("Student 1: $a + $b = $sum")
 }
 
-
-
 private fun student3Print() {
     val a = 15
     val b = 4
     val difference = a - b
     println("Student 3: $a - $b = $difference")
+}
+
+private fun student5Print() {
+    val base = 2
+    val exponent = 5
+    val power = base.toDouble().pow(exponent.toDouble()).toInt()
+    println("Student 5: $base^$exponent = $power")
+//привет привет :)
 }
