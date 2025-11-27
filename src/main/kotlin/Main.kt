@@ -49,6 +49,7 @@ fun main(): Unit = application {
     student5Print()
     student6Print()
     student8Print()
+    student9Print()
 }
 
 // пробный коммит
