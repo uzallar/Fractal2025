@@ -48,6 +48,7 @@ fun main(): Unit = application {
     student3Print()
     student5Print()
     student6Print()
+    student7Print()
     student8Print()
     student9Print()
 }
@@ -102,4 +103,10 @@ private fun student6Print() {
 private fun student8Print() {
     val pi = Math.PI
     println("Student 8: PI = ${"%.4f".format(pi)}")
+}
+
+private fun student7Print() {
+    val name = "Git"
+    val action = "is awesome"
+    println("Student 7: $name $action!")
 }
