@@ -31,19 +31,7 @@ dependencies {
 
     testImplementation(kotlin("test")) // без этого тесты не работали
     testImplementation("org.junit.jupiter:junit-jupiter:5.10.0")//это тоже
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.9.2")
-    testImplementation("org.junit.jupiter:junit-jupiter-engine:5.9.2")
-
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.9.2")
-    testImplementation("org.junit.jupiter:junit-jupiter-params:5.9.2")
-    testImplementation(kotlin("test"))
-    testImplementation(kotlin("test-junit5"))
-
-
-
-
 }
-
 
 compose.desktop {
     application {
@@ -57,8 +45,5 @@ compose.desktop {
     }
 }
 tasks.withType<Test> {
-    useJUnitPlatform() // обязательно для JUnit 5
-    systemProperty("java.awt.headless", "true")
-    systemProperty("test.env", "CI")
-
+    useJUnitPlatform()   // обязательно для JUnit 5
 }
