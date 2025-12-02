@@ -4,7 +4,6 @@ plugins {
     kotlin("jvm")
     id("org.jetbrains.compose")
     id("org.jetbrains.kotlin.plugin.compose")
-    //id("org.jetbrains.compose") version "1.6.11"
 }
 
 group = "ru.gr206"
