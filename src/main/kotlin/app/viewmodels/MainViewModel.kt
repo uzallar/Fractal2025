@@ -129,4 +129,44 @@ class MainViewModel {
         currentColorSchemeName = "Космическая"
         mustRepaint = true
     }
+    // ============ ДОБАВЛЕНО ДЛЯ ПАНОРАМИРОВАНИЯ ============
+
+    // Для контекстного меню
+    var showContextMenu by mutableStateOf(false)
+    var contextMenuPosition by mutableStateOf(Offset.Zero)
+
+    // Метод для панорамирования
+    fun handlePan(delta: Offset) {
+        // Вычисляем смещение в координатах фрактала
+        val dx = delta.x / currentPlain.width
+        val dy = delta.y / currentPlain.height
+
+        val xRange = currentPlain.xMax - currentPlain.xMin
+        val yRange = currentPlain.yMax - currentPlain.yMin
+
+        // Сдвигаем область просмотра
+        currentPlain.xMin -= dx * xRange
+        currentPlain.xMax -= dx * xRange
+        currentPlain.yMin -= dy * yRange
+        currentPlain.yMax -= dy * yRange
+
+        // Активируем перерисовку через безопасный метод
+        triggerRepaintSafely()
+    }
+
+    // Безопасный способ вызвать перерисовку
+    private fun triggerRepaintSafely() {
+        // Создаем микроскопическое выделение в углу, которое не мешает
+        val originalOffset = selectionOffset
+        val originalSize = selectionSize
+
+        // Временное изменение в незаметном месте
+        selectionOffset = Offset(-100f, -100f)
+        selectionSize = Size(0.1f, 0.1f)
+
+        // Сразу возвращаем обратно
+        selectionOffset = originalOffset
+        selectionSize = originalSize
+    }
+    // ============ КОНЕЦ ДОБАВЛЕНИЙ ============
 }

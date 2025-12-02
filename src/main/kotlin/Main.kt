@@ -24,6 +24,10 @@ import androidx.compose.ui.window.application
 import app.ui.PaintPanel
 import app.ui.SelectionPanel
 import app.viewmodels.MainViewModel
+// 1. Добавить эти 3 импорта
+import app.mouse.MousePan.rightClickPan
+import app.mouse.ClipboardService
+import app.mouse.FractalContextMenu
 
 @Composable
 @Preview
@@ -31,7 +35,11 @@ fun App(viewModel: MainViewModel = MainViewModel()) {
     MaterialTheme {
         Box(modifier = Modifier.fillMaxSize()) {
             PaintPanel(
-                Modifier.fillMaxSize(),
+                // 2. Добавить .rightClickPan в эту строку
+                Modifier.fillMaxSize().rightClickPan(
+                    onPanDelta = { viewModel.handlePan(it) },
+                    onRightClick = { viewModel.contextMenuPosition = it; viewModel.showContextMenu = true }
+                ),
                 onImageUpdate = {
                     viewModel.onImageUpdate(it)
                 }
@@ -45,6 +53,14 @@ fun App(viewModel: MainViewModel = MainViewModel()) {
                 viewModel::onStartSelecting,
                 viewModel::onStopSelecting,
                 viewModel::onSelecting,
+            )
+
+            // 3. Добавить эту одну строку контекстного меню
+            FractalContextMenu(
+                viewModel.showContextMenu,
+                { viewModel.showContextMenu = false },
+                { ClipboardService.copyFractalCoordinates(viewModel.contextMenuPosition, viewModel.currentPlain); viewModel.showContextMenu = false },
+                if (viewModel.showContextMenu) ClipboardService.getCoordinatesString(viewModel.contextMenuPosition, viewModel.currentPlain) else ""
             )
 
             // Панель управления
@@ -68,6 +84,7 @@ fun App(viewModel: MainViewModel = MainViewModel()) {
     }
 }
 
+// Всё остальное БЕЗ ИЗМЕНЕНИЙ...
 @Composable
 fun ControlPanel(viewModel: MainViewModel) {
     Column(
@@ -165,7 +182,4 @@ fun main(): Unit = application {
     ) {
         App()
     }
-
 }
-
-
