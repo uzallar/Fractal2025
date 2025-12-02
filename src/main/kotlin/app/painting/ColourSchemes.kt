@@ -26,9 +26,9 @@ object ColorSchemes {
             val variationB = 0.1f * sin(t * 7f + 2f)
 
             Color(
-                red = (baseR + variationR).coerceIn(0f, 1f),
-                green = (baseG + variationG).coerceIn(0f, 1f),
-                blue = (baseB + variationB).coerceIn(0f, 1f)
+                red = abs(cos(7 * probability)),
+                green = abs(sin(12 * (1f - probability))),
+                blue = abs(sin(4 * probability) * cos(4 * (1 - probability)))
             )
         }
     }
