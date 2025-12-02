@@ -6,28 +6,31 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.ImageBitmap
-import androidx.compose.ui.graphics.asSkiaBitmap
+//import androidx.compose.ui.graphics.asSkiaBitmap
 import androidx.compose.ui.graphics.drawscope.DrawScope
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.CoroutineScope
+//import androidx.lifecycle.ViewModel
+//import androidx.lifecycle.viewModelScope
+//import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.cancelAndJoin
+//import kotlinx.coroutines.Job
+//import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withContext
+//import kotlinx.coroutines.withContext
 import app.painting.FractalPainter
 import app.painting.convertation.Converter
 import app.painting.convertation.Plain
+import app.fractal.IterationsCalculator
 
 class MainViewModel{
     var fractalImage: ImageBitmap = ImageBitmap(0, 0)
     var selectionOffset by mutableStateOf(Offset(0f, 0f))
     var selectionSize by mutableStateOf(Size(0f, 0f))
     private val plain = Plain(-2.0,1.0,-1.0,1.0)
-    private val fractalPainter = FractalPainter(plain)
+    private val fractalPainter = FractalPainter(plain){
+        IterationsCalculator.getMaxIterations(plain) }
     private var mustRepaint by mutableStateOf(true)
+    val currentPlain: Plain get() = plain // геттер для того чтобы использовать в Main.kt App() Text()
 
     fun paint(scope: DrawScope) = runBlocking {
         plain.width = scope.size.width

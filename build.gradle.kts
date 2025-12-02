@@ -4,6 +4,7 @@ plugins {
     kotlin("jvm")
     id("org.jetbrains.compose")
     id("org.jetbrains.kotlin.plugin.compose")
+    //id("org.jetbrains.compose") version "1.6.11"
 }
 
 group = "ru.gr206"
@@ -22,7 +23,14 @@ dependencies {
     // With compose.desktop.common you will also lose @Preview functionality
     implementation(compose.desktop.currentOs)
     implementation("androidx.lifecycle:lifecycle-viewmodel-desktop:2.9.4")
+    implementation(compose.material3)
+
+
+
     //implementation("org.jetbrains.compose.ui:ui-graphics")
+
+    testImplementation(kotlin("test")) // без этого тесты не работали
+    testImplementation("org.junit.jupiter:junit-jupiter:5.10.0")//это тоже
 }
 
 compose.desktop {
@@ -35,4 +43,7 @@ compose.desktop {
             packageVersion = "1.0.0"
         }
     }
+}
+tasks.withType<Test> {
+    useJUnitPlatform()   // обязательно для JUnit 5
 }

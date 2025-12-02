@@ -9,12 +9,16 @@ import app.fractal.Mandelbrot
 import app.math.Complex
 import app.painting.convertation.Converter
 import app.painting.convertation.Plain
-import kotlin.concurrent.thread
+//import kotlin.concurrent.thread
 import kotlin.math.absoluteValue
 import kotlin.math.cos
 import kotlin.math.sin
 
-class FractalPainter(private val plain: Plain): Painter {
+
+class FractalPainter(private val plain: Plain,
+                     private val maxIterationsProvider: () -> Int = { 200 }
+    // итераций по умол = 200
+): Painter {
 
     //private val fractalCoroutine = CoroutineScope(Dispatchers.Default)
 
@@ -29,7 +33,8 @@ class FractalPainter(private val plain: Plain): Painter {
     override suspend fun paint(scope: DrawScope) {
         plain.width = scope.size.width
         plain.height = scope.size.height
-        val m = Mandelbrot(nMax = 200)
+        //val nMax = maxIterationsProvider()
+        val m = Mandelbrot(nMax = maxIterationsProvider())
         for (iX in 0..<plain.width.toInt()) {
             coroutineScope {
                 val x = iX.toFloat()
