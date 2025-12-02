@@ -65,70 +65,7 @@ fun main(): Unit = application {
     ) {
         App()
     }
-    student2Print()
-    student1Print()
-    student3Print()
-    student5Print()
-    student6Print()
-    student7Print()
-    student8Print()
-    student9Print()
-}
-
-// пробный коммит
-
-
-private fun student2Print() {
-    val x = 7
-    val y = 8
-    val product = x * y
-    println("Student 2: $x * $y = $product")
-}
-
-
-private fun student9Print() {
-    val randomNum = (1..100).random()
-    println("Student 9: Random number between 1 and 100: $randomNum")
 }
 
 
 
-private fun student1Print() {
-    val a = 5
-    val b = 3
-    val sum = a + b
-    println("Student 1: $a + $b = $sum")
-}
-
-private fun student3Print() {
-    val a = 15
-    val b = 4
-    val difference = a - b
-    println("Student 3: $a - $b = $difference")
-}
-
-private fun student5Print() {
-    val base = 2
-    val exponent = 5
-    val power = base.toDouble().pow(exponent.toDouble()).toInt()
-    println("Student 5: $base^$exponent = $power")
-//привет привет :)
-}
-
-private fun student6Print() {
-    val dividend = 17
-    val divisor = 5
-    val remainder = dividend % divisor
-    println("Student 6: $dividend % $divisor = $remainder")
-}
-
-private fun student8Print() {
-    val pi = Math.PI
-    println("Student 8: PI = ${"%.4f".format(pi)}")
-}
-
-private fun student7Print() {
-    val name = "Git"
-    val action = "is awesome"
-    println("Student 7: $name $action!")
-}
