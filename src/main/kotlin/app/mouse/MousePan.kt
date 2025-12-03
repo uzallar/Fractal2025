@@ -40,7 +40,6 @@ fun Modifier.fractalMouseHandlers(
                                     mouseState = MouseState.LEFT_SELECTION
                                     startPosition = event.changes.first().position
                                     onLeftSelectionStart(startPosition)
-                                    // Также устанавливаем текущую позицию как начальную
                                     onLeftSelectionUpdate(startPosition)
                                     event.changes.first().consume()
                                 }
@@ -82,8 +81,6 @@ fun Modifier.fractalMouseHandlers(
                                 when (mouseState) {
                                     MouseState.RIGHT_DRAG -> {
                                         val endPosition = event.changes.first().position
-
-                                        // Упрощенная проверка на клик (движение < 10px)
                                         val dx = endPosition.x - startPosition.x
                                         val dy = endPosition.y - startPosition.y
                                         val distanceSquared = dx * dx + dy * dy
