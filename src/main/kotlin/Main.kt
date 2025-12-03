@@ -5,6 +5,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -69,58 +70,81 @@ fun main() = application {
 fun FractalCanvas(viewModel: MainViewModel) {
     val textMeasurer = rememberTextMeasurer()
 
-    Canvas(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color.Black)
-            .fractalMouseHandlers(
-                onRightPanDelta = { delta ->
-                    viewModel.handlePan(delta)
-                },
-                onRightClick = { position ->
-                    viewModel.showContextMenuAt(position)
-                },
-                onLeftSelectionStart = { offset ->
-                    viewModel.onStartSelecting(offset)
-                },
-                onLeftSelectionUpdate = { currentPosition ->
-                    viewModel.onSelecting(currentPosition)
-                },
-                onLeftSelectionEnd = {
-                    viewModel.onStopSelecting()
+    Box(modifier = Modifier.fillMaxSize()) {
+        Canvas(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.Black)
+                .fractalMouseHandlers(
+                    onRightPanDelta = { delta ->
+                        viewModel.handlePan(delta)
+                    },
+                    onRightClick = { position ->
+                        viewModel.showContextMenuAt(position)
+                    },
+                    onLeftSelectionStart = { offset ->
+                        viewModel.onStartSelecting(offset)
+                    },
+                    onLeftSelectionUpdate = { currentPosition ->
+                        viewModel.onSelecting(currentPosition)
+                    },
+                    onLeftSelectionEnd = {
+                        viewModel.onStopSelecting()
+                    }
+                )
+        ) {
+            viewModel.paint(this)
+
+            if (viewModel.isSelecting) {
+                val (selectionOffset, selectionSize) = viewModel.selectionRect
+
+                if (selectionSize.width > 0 && selectionSize.height > 0) {
+                    drawRect(
+                        color = Color.White.copy(alpha = 0.2f),
+                        topLeft = selectionOffset,
+                        size = selectionSize
+                    )
+                    drawRect(
+                        color = Color.White,
+                        topLeft = selectionOffset,
+                        size = selectionSize,
+                        style = Stroke(width = 2f)
+                    )
+
+
+                    val text = "%.0f × %.0f".format(selectionSize.width, selectionSize.height)
+                    drawSelectionText(text, selectionOffset, selectionSize, textMeasurer)
                 }
-            )
-    ) {
-        viewModel.paint(this)
-
-        if (viewModel.isSelecting) {
-            val (selectionOffset, selectionSize) = viewModel.selectionRect
-
-            if (selectionSize.width > 0 && selectionSize.height > 0) {
-                drawRect(
-                    color = Color.White.copy(alpha = 0.2f),
-                    topLeft = selectionOffset,
-                    size = selectionSize
-                )
-                drawRect(
-                    color = Color.White,
-                    topLeft = selectionOffset,
-                    size = selectionSize,
-                    style = Stroke(width = 2f)
-                )
-                // Показываем размеры выделения
-                val text = "%.0f × %.0f".format(selectionSize.width, selectionSize.height)
-                drawSelectionText(text, selectionOffset, selectionSize, textMeasurer)
             }
         }
-    }
 
-    FractalContextMenu(
-        isOpen = viewModel.showContextMenu,
-        onDismiss = { viewModel.hideContextMenu() },
-        onCopyCoordinates = { viewModel.copyCoordinatesToClipboard() },
-        coordinatesInfo = viewModel.contextMenuCoordinates
-    )
+        // Индикатор зума
+        Box(
+            modifier = Modifier
+                .align(Alignment.TopStart)
+                .padding(16.dp)
+        ) {
+            Card(
+                backgroundColor = Color.Black.copy(alpha = 0.7f),
+                elevation = 4.dp
+            ) {
+                Text(
+                    text = "Увеличение: ${viewModel.zoomText}",
+                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+                    color = Color.White,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Medium
+                )
+            }
+        }
+
+        FractalContextMenu(
+            isOpen = viewModel.showContextMenu,
+            onDismiss = { viewModel.hideContextMenu() },
+            onCopyCoordinates = { viewModel.copyCoordinatesToClipboard() },
+            coordinatesInfo = viewModel.contextMenuCoordinates
+        )
+    }
 }
 
 private fun DrawScope.drawSelectionText(
@@ -158,6 +182,7 @@ private fun DrawScope.drawSelectionText(
         topLeft = textPosition
     )
 }
+
 
 @Composable
 fun ControlPanel(viewModel: MainViewModel) {
@@ -204,6 +229,7 @@ fun ControlPanel(viewModel: MainViewModel) {
 
             Spacer(modifier = Modifier.height(16.dp))
 
+
             // Выбор цветовой схемы
             Text("Цветовые схемы:", color = Color.White)
             Button(
@@ -233,7 +259,7 @@ fun ControlPanel(viewModel: MainViewModel) {
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Кнопка для сброса зума
+
             Button(
                 onClick = { viewModel.resetZoom() },
                 modifier = Modifier.fillMaxWidth(),
