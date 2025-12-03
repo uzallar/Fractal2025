@@ -12,8 +12,8 @@ import app.painting.convertation.Plain
 
 class FractalPainter(
     private val plain: Plain,
-    private val fractalFunction: FractalFunction, // Лямбда для фрактала
-    private val colorScheme: ColorScheme,         // Лямбда для цветов
+    val fractalFunction: FractalFunction, // Лямбда для фрактала
+    val colorScheme: ColorScheme,         // Лямбда для цветов
     private val maxIterationsProvider: () -> Int = { 200 }
 ): Painter {
 
