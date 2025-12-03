@@ -5,45 +5,39 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import kotlinx.coroutines.coroutineScope
-import app.fractal.Mandelbrot
+import app.fractal.FractalFunction
 import app.math.Complex
 import app.painting.convertation.Converter
 import app.painting.convertation.Plain
-import kotlin.concurrent.thread
-import kotlin.math.absoluteValue
-import kotlin.math.cos
-import kotlin.math.sin
 
-class FractalPainter(private val plain: Plain): Painter {
-
-    //private val fractalCoroutine = CoroutineScope(Dispatchers.Default)
-
-    private fun getColor(probability: Float) = if (probability == 1f)
-        Color.Black
-    else Color(
-        red = cos(7 * probability).absoluteValue,
-        green = sin(12 * (1f - probability)).absoluteValue,
-        blue = (sin(4 * probability) * cos(4 * (1 - probability))).absoluteValue
-    )
+class FractalPainter(
+    private val plain: Plain,
+    private val fractalFunction: FractalFunction, // Лямбда для фрактала
+    private val colorScheme: ColorScheme,         // Лямбда для цветов
+    private val maxIterationsProvider: () -> Int = { 200 }
+): Painter {
 
     override suspend fun paint(scope: DrawScope) {
         plain.width = scope.size.width
         plain.height = scope.size.height
-        val m = Mandelbrot(nMax = 200)
+
         for (iX in 0..<plain.width.toInt()) {
             coroutineScope {
                 val x = iX.toFloat()
                 repeat(plain.height.toInt()) { iY ->
                     val y = iY.toFloat()
+
+                    val complex = Complex(
+                        Converter.xScr2Crt(x, plain),
+                        Converter.yScr2Crt(y, plain),
+                    )
+
+                    val probability = fractalFunction(complex)
+
+                    val color = colorScheme(probability)
+
                     scope.drawRect(
-                        getColor(
-                            m.isInSet(
-                                Complex(
-                                    Converter.xScr2Crt(x, plain),
-                                    Converter.yScr2Crt(y, plain),
-                                )
-                            )
-                        ),
+                        color,
                         Offset(x, y),
                         Size(1f, 1f),
                     )
@@ -52,4 +46,15 @@ class FractalPainter(private val plain: Plain): Painter {
         }
     }
 
+    fun withFractal(newFractal: FractalFunction): FractalPainter {
+        return FractalPainter(plain, newFractal, colorScheme, maxIterationsProvider)
+    }
+
+    fun withColorScheme(newColorScheme: ColorScheme): FractalPainter {
+        return FractalPainter(plain, fractalFunction, newColorScheme, maxIterationsProvider)
+    }
+
+    fun withMaxIterationsProvider(newProvider: () -> Int): FractalPainter {
+        return FractalPainter(plain, fractalFunction, colorScheme, newProvider)
+    }
 }
