@@ -57,10 +57,7 @@ fun main() = application {
                         .padding(paddingValues)
                         .background(Color.Black)
                 ) {
-                    // Сначала фрактал на весь экран
                     FractalCanvas(viewModel)
-
-                    // Затем панель управления сверху
                     ControlPanel(viewModel)
                 }
             }
@@ -78,35 +75,28 @@ fun FractalCanvas(viewModel: MainViewModel) {
             .background(Color.Black)
             .fractalMouseHandlers(
                 onRightPanDelta = { delta ->
-                    // Панорамирование при перемещении с зажатой правой кнопкой
                     viewModel.handlePan(delta)
                 },
                 onRightClick = { position ->
-                    // Правый клик - показать контекстное меню
                     viewModel.showContextMenuAt(position)
                 },
                 onLeftSelectionStart = { offset ->
-                    // Начало выделения ЛКМ
                     viewModel.onStartSelecting(offset)
                 },
                 onLeftSelectionUpdate = { currentPosition ->
-                    // Обновление выделения при перемещении мыши
                     viewModel.onSelecting(currentPosition)
                 },
                 onLeftSelectionEnd = {
-                    // Конец выделения - применяем зум
                     viewModel.onStopSelecting()
                 }
             )
     ) {
         viewModel.paint(this)
 
-        // Отрисовка выделения, если есть
         if (viewModel.isSelecting) {
             val (selectionOffset, selectionSize) = viewModel.selectionRect
 
             if (selectionSize.width > 0 && selectionSize.height > 0) {
-                // Полупрозрачный белый прямоугольник с белой рамкой
                 drawRect(
                     color = Color.White.copy(alpha = 0.2f),
                     topLeft = selectionOffset,
@@ -118,7 +108,6 @@ fun FractalCanvas(viewModel: MainViewModel) {
                     size = selectionSize,
                     style = Stroke(width = 2f)
                 )
-
                 // Показываем размеры выделения
                 val text = "%.0f × %.0f".format(selectionSize.width, selectionSize.height)
                 drawSelectionText(text, selectionOffset, selectionSize, textMeasurer)
@@ -126,7 +115,6 @@ fun FractalCanvas(viewModel: MainViewModel) {
         }
     }
 
-    // Контекстное меню
     FractalContextMenu(
         isOpen = viewModel.showContextMenu,
         onDismiss = { viewModel.hideContextMenu() },
@@ -154,7 +142,6 @@ private fun DrawScope.drawSelectionText(
         selectionOffset.y + selectionSize.height / 2 - textLayoutResult.size.height / 2
     )
 
-    // Фон для текста для лучшей читаемости
     drawRect(
         color = Color.Black.copy(alpha = 0.5f),
         topLeft = textPosition - Offset(2f, 2f),
@@ -185,10 +172,6 @@ fun ControlPanel(viewModel: MainViewModel) {
                 .width(200.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Text("Инструкция:", color = Color.Yellow, fontSize = 12.sp)
-            Text("ЛКМ: выделить область", color = Color.White, fontSize = 11.sp)
-            Text("ПКМ: панорамировать", color = Color.White, fontSize = 11.sp)
-            Text("ПКМ клик: координаты", color = Color.White, fontSize = 11.sp)
 
             Spacer(modifier = Modifier.height(8.dp))
 
