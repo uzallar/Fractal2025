@@ -18,15 +18,11 @@ import app.mouse.ClipboardService
 
 class MainViewModel {
     var fractalImage: ImageBitmap = ImageBitmap(0, 0)
-
-    // Для выделения области
     var selectionStart by mutableStateOf(Offset.Zero)
     var selectionEnd by mutableStateOf(Offset.Zero)
     var isSelecting by mutableStateOf(false)
-
     var currentFractalName by mutableStateOf("Мандельброт")
     var currentColorSchemeName by mutableStateOf("Стандартная")
-
     private val plain = Plain(-2.0, 1.0, -1.0, 1.0)
 
     private var fractalPainter by mutableStateOf(
@@ -40,8 +36,6 @@ class MainViewModel {
 
     private var mustRepaint by mutableStateOf(true)
     val currentPlain: Plain get() = plain
-
-    // Вычисляемое свойство для прямоугольника выделения
     val selectionRect: Pair<Offset, Size>
         get() {
             if (!isSelecting) return Pair(Offset.Zero, Size.Zero)
@@ -74,7 +68,6 @@ class MainViewModel {
         fractalImage = image
     }
 
-    // Методы для выделения областей
     fun onStartSelecting(offset: Offset) {
         println("DEBUG: Start selecting at $offset")
         selectionStart = offset
@@ -94,28 +87,20 @@ class MainViewModel {
                 val y1 = Converter.yScr2Crt(selectionOffset.y + selectionSize.height, plain)
                 val x2 = Converter.xScr2Crt(selectionOffset.x + selectionSize.width, plain)
                 val y2 = Converter.yScr2Crt(selectionOffset.y, plain)
-
-                // Убедимся, что координаты корректны
                 val xMin = minOf(x1, x2)
                 val xMax = maxOf(x1, x2)
                 val yMin = minOf(y1, y2)
                 val yMax = maxOf(y1, y2)
-
                 println("DEBUG: Zooming to [$xMin, $yMin] - [$xMax, $yMax]")
-
-                // Применяем зум к выделенной области
                 plain.xMin = xMin
                 plain.xMax = xMax
                 plain.yMin = yMin
                 plain.yMax = yMax
-
                 mustRepaint = true
             } else {
                 println("DEBUG: Selection too small, ignoring")
             }
         }
-
-        // Сбрасываем выделение
         isSelecting = false
     }
 
@@ -173,32 +158,25 @@ class MainViewModel {
         currentColorSchemeName = "Космическая"
         mustRepaint = true
     }
-
-    // Для контекстного меню
     var showContextMenu by mutableStateOf(false)
     var contextMenuPosition by mutableStateOf(Offset.Zero)
     var contextMenuCoordinates by mutableStateOf("")
 
-    // Метод для панорамирования
     fun handlePan(delta: Offset) {
         // Вычисляем смещение в координатах фрактала
         val dx = delta.x / plain.width
         val dy = delta.y / plain.height
-
         val xRange = plain.xMax - plain.xMin
         val yRange = plain.yMax - plain.yMin
-
-        // Сдвигаем область просмотра
         plain.xMin -= dx * xRange
         plain.xMax -= dx * xRange
         plain.yMin -= dy * yRange
         plain.yMax -= dy * yRange
-
         // Активируем перерисовку
         mustRepaint = true
     }
 
-    // Для контекстного меню
+
     fun showContextMenuAt(position: Offset) {
         contextMenuPosition = position
         contextMenuCoordinates = ClipboardService.getCoordinatesString(position, plain)
@@ -213,7 +191,6 @@ class MainViewModel {
         ClipboardService.copyFractalCoordinates(contextMenuPosition, plain)
     }
 
-    // Метод для сброса зума (может понадобиться для кнопки "Сброс")
     fun resetZoom() {
         plain.xMin = -2.0
         plain.xMax = 1.0
