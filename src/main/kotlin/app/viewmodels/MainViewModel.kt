@@ -18,6 +18,7 @@ import app.mouse.ClipboardService
 import app.history.UndoManager
 import kotlin.math.max
 import kotlin.math.min
+import kotlin.random.Random
 
 class MainViewModel {
     var fractalImage: ImageBitmap = ImageBitmap(0, 0)
@@ -32,7 +33,6 @@ class MainViewModel {
     var canRedo by mutableStateOf(false)
     var historyInfo by mutableStateOf("")
 
-    // Для отображения подробной истории (можно показать в диалоге)
     var detailedHistory by mutableStateOf("")
     private var isPanning = false
     var showContextMenu by mutableStateOf(false)
@@ -457,8 +457,6 @@ class MainViewModel {
         mustRepaint = true
     }
 
-    // ============ МЕТОДЫ ДЛЯ РАБОТЫ С ПОДРОБНОЙ ИСТОРИЕЙ ============
-
 
     fun refreshDetailedHistory() {
         detailedHistory = undoManager.getDetailedHistoryInfo()
@@ -498,13 +496,49 @@ class MainViewModel {
     }
 
 
-
-
-    /**
-     * Действие при закрытии приложения
-     */
     fun onAppClosing() {
         // Можно сохранить историю в файл или просто очистить
         // undoManager.clear()
+    }
+
+
+    fun randomJump() {
+        resetPanFlag()
+        saveCurrentState()
+
+        // Список интересных точек фрактала
+        val interestingPoints = listOf(
+            Pair(-0.75, 0.1),    // Знаменитая "головастик"
+            Pair(-0.1, 0.65),    // Верхняя часть
+            Pair(0.28, 0.0),     // Правая область
+            Pair(-1.25, 0.0),    // Левая часть
+            Pair(-0.8, 0.15),    // Детальная область
+            Pair(0.0, 0.8),      // Верхняя ось
+            Pair(-0.5, 0.5),     // Диагональная область
+            Pair(-1.0, 0.0),     // Еще левее
+            Pair(0.2, 0.4),      // Правый верх
+            Pair(-0.2, 0.6)      // Верхний центр
+        )
+
+        // Выбираем случайную точку из списка
+        val (targetX, targetY) = interestingPoints.random()
+
+        // Размер области для отображения
+        val size = 1.0
+
+        // Учитываем пропорции окна
+        val aspect = plain.width / plain.height
+        val width = size
+        val height = width / aspect
+
+        // Устанавливаем новые границы
+        plain.xMin = targetX - width / 2
+        plain.xMax = targetX + width / 2
+        plain.yMin = targetY - height / 2
+        plain.yMax = targetY + height / 2
+
+        // Обновляем экран
+        updateZoomLevel()
+        mustRepaint = true
     }
 }

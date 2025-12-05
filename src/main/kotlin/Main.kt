@@ -22,7 +22,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.key.Key
-import androidx.compose.ui.input.key.KeyShortcut
 import androidx.compose.ui.input.key.isCtrlPressed
 import androidx.compose.ui.input.pointer.pointerMoveFilter
 import androidx.compose.ui.text.TextStyle
@@ -47,7 +46,6 @@ private val CardPink = Color(0xFFFFEBEE)
 private val TextDark = Color(0xFF311B92)
 private val ButtonColor = Color(0xFFD81B60)
 private val DisabledPink = Color(0xFFF8C1D9)
-private val BrightPurple = Color(0xFF7B1FA2)
 
 @OptIn(ExperimentalComposeUiApi::class)
 fun main() = application {
@@ -65,12 +63,7 @@ fun main() = application {
     ) {
         // Обработка горячих клавиш
         LaunchedEffect(Unit) {
-            // Можно также использовать onKeyEvent в Modifier,
-            // но для глобальных сочетаний клавиш лучше использовать Window
         }
-
-        // Добавляем обработку клавиш к окну через onPreviewKeyEvent
-        val keyState = remember { mutableStateOf(true) }
 
         Box(
             modifier = Modifier
@@ -82,7 +75,7 @@ fun main() = application {
                             viewModel.undo()
                             true
                         }
-                        // Ctrl+Y или Ctrl+Shift+Z - повтор
+                        // Ctrl+Y
                         (keyEvent.key == Key.Y && keyEvent.isCtrlPressed && keyEvent.type == KeyEventType.KeyDown) ||
                                 (keyEvent.key == Key.Z && keyEvent.isCtrlPressed && keyEvent.isShiftPressed && keyEvent.type == KeyEventType.KeyDown) -> {
                             viewModel.redo()
@@ -407,16 +400,97 @@ fun FractalCanvas(viewModel: MainViewModel) {
                 .align(Alignment.TopStart)
                 .padding(start = 16.dp, top = 16.dp)
         ) {
-            Column(
-                verticalArrangement = Arrangement.spacedBy(8.dp)
+            Card(
+                backgroundColor = CardPink.copy(alpha = 0.9f),
+                elevation = 8.dp,
+                shape = MaterialTheme.shapes.medium,
+                modifier = Modifier.wrapContentSize()
             ) {
-                Card(
-                    backgroundColor = CardPink.copy(alpha = 0.9f),
-                    elevation = 8.dp,
-                    shape = MaterialTheme.shapes.medium
+                Row(
+                    modifier = Modifier.padding(8.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
+                    // Кнопка Назад (Undo)
+                    Button(
+                        onClick = { viewModel.undo() },
+                        enabled = viewModel.canUndo,
+                        modifier = Modifier.size(40.dp),
+                        contentPadding = PaddingValues(0.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            backgroundColor = if (viewModel.canUndo) ButtonColor else DisabledPink,
+                            contentColor = Color.White,
+                            disabledBackgroundColor = DisabledPink,
+                            disabledContentColor = Color.White.copy(alpha = 0.5f)
+                        ),
+                        shape = MaterialTheme.shapes.small,
+                        elevation = ButtonDefaults.elevation(
+                            defaultElevation = 4.dp,
+                            pressedElevation = 8.dp,
+                            disabledElevation = 0.dp
+                        )
+                    ) {
+                        Icon(
+                            Icons.Default.ArrowBack,
+                            contentDescription = "Назад",
+                            modifier = Modifier.size(24.dp)
+                        )
+                    }
+
+                    Button(
+                        onClick = { viewModel.redo() },
+                        enabled = viewModel.canRedo,
+                        modifier = Modifier.size(40.dp),
+                        contentPadding = PaddingValues(0.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            backgroundColor = if (viewModel.canRedo) ButtonColor else DisabledPink,
+                            contentColor = Color.White,
+                            disabledBackgroundColor = DisabledPink,
+                            disabledContentColor = Color.White.copy(alpha = 0.5f)
+                        ),
+                        shape = MaterialTheme.shapes.small,
+                        elevation = ButtonDefaults.elevation(
+                            defaultElevation = 4.dp,
+                            pressedElevation = 8.dp,
+                            disabledElevation = 0.dp
+                        )
+                    ) {
+                        Icon(
+                            Icons.Default.ArrowForward,
+                            contentDescription = "Вперёд",
+                            modifier = Modifier.size(24.dp)
+                        )
+                    }
+
+                    Box(
+                        modifier = Modifier
+                            .width(1.dp)
+                            .height(30.dp)
+                            .background(SoftPink.copy(alpha = 0.5f))
+                    )
+
+                    Button(
+                        onClick = { viewModel.resetZoom() },
+                        modifier = Modifier.size(40.dp),
+                        contentPadding = PaddingValues(0.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            backgroundColor = ButtonColor,
+                            contentColor = Color.White
+                        ),
+                        shape = MaterialTheme.shapes.small,
+                        elevation = ButtonDefaults.elevation(
+                            defaultElevation = 4.dp,
+                            pressedElevation = 8.dp
+                        )
+                    ) {
+                        Text(
+                            "🗑️",
+                            fontSize = 18.sp
+                        )
+                    }
+
                     Column(
-                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+                        modifier = Modifier.padding(start = 8.dp),
                         verticalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
                         Row(
@@ -425,96 +499,34 @@ fun FractalCanvas(viewModel: MainViewModel) {
                         ) {
                             Box(
                                 modifier = Modifier
-                                    .size(16.dp)
+                                    .size(12.dp)
                                     .background(MediumPink, androidx.compose.foundation.shape.CircleShape)
                             ) {
                                 Box(
                                     modifier = Modifier
                                         .fillMaxSize()
-                                        .padding(4.dp)
+                                        .padding(3.dp)
                                         .background(Color.White, androidx.compose.foundation.shape.CircleShape)
                                 )
                             }
                             Text(
                                 text = "Увеличение: ${viewModel.zoomText}",
                                 color = TextDark,
-                                fontSize = 14.sp,
+                                fontSize = 12.sp,
                                 fontWeight = FontWeight.Medium
                             )
                         }
                         Text(
                             text = "Итерации: ${viewModel.maxIterations}",
                             color = TextDark,
-                            fontSize = 14.sp,
+                            fontSize = 12.sp,
                             fontWeight = FontWeight.Medium
                         )
                         Text(
                             text = "История: ${viewModel.historyInfo}",
                             color = TextDark.copy(alpha = 0.7f),
-                            fontSize = 12.sp
+                            fontSize = 11.sp
                         )
-                    }
-                }
-
-                Card(
-                    backgroundColor = CardPink.copy(alpha = 0.9f),
-                    elevation = 8.dp,
-                    shape = MaterialTheme.shapes.medium,
-                    modifier = Modifier.wrapContentSize()
-                ) {
-                    Row(
-                        modifier = Modifier.padding(4.dp),
-                        horizontalArrangement = Arrangement.spacedBy(4.dp)
-                    ) {
-                        Button(
-                            onClick = { viewModel.undo() },
-                            enabled = viewModel.canUndo,
-                            modifier = Modifier.size(40.dp),
-                            contentPadding = PaddingValues(0.dp),
-                            colors = ButtonDefaults.buttonColors(
-                                backgroundColor = if (viewModel.canUndo) ButtonColor else DisabledPink,
-                                contentColor = Color.White,
-                                disabledBackgroundColor = DisabledPink,
-                                disabledContentColor = Color.White.copy(alpha = 0.5f)
-                            ),
-                            shape = MaterialTheme.shapes.small,
-                            elevation = ButtonDefaults.elevation(
-                                defaultElevation = 4.dp,
-                                pressedElevation = 8.dp,
-                                disabledElevation = 0.dp
-                            )
-                        ) {
-                            Icon(
-                                Icons.Default.ArrowBack,
-                                contentDescription = "Назад",
-                                modifier = Modifier.size(24.dp)
-                            )
-                        }
-
-                        Button(
-                            onClick = { viewModel.redo() },
-                            enabled = viewModel.canRedo,
-                            modifier = Modifier.size(40.dp),
-                            contentPadding = PaddingValues(0.dp),
-                            colors = ButtonDefaults.buttonColors(
-                                backgroundColor = if (viewModel.canRedo) ButtonColor else DisabledPink,
-                                contentColor = Color.White,
-                                disabledBackgroundColor = DisabledPink,
-                                disabledContentColor = Color.White.copy(alpha = 0.5f)
-                            ),
-                            shape = MaterialTheme.shapes.small,
-                            elevation = ButtonDefaults.elevation(
-                                defaultElevation = 4.dp,
-                                pressedElevation = 8.dp,
-                                disabledElevation = 0.dp
-                            )
-                        ) {
-                            Icon(
-                                Icons.Default.ArrowForward,
-                                contentDescription = "Вперёд",
-                                modifier = Modifier.size(24.dp)
-                            )
-                        }
                     }
                 }
             }
@@ -709,6 +721,30 @@ fun ControlPanel(viewModel: MainViewModel) {
                 Divider(color = SoftPink, thickness = 1.dp)
 
                 Button(
+                    onClick = { viewModel.randomJump() },
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = ButtonDefaults.buttonColors(
+                        backgroundColor = ButtonColor,
+                        contentColor = Color.White
+                    ),
+                    shape = MaterialTheme.shapes.small,
+                    elevation = ButtonDefaults.elevation(
+                        defaultElevation = 4.dp,
+                        pressedElevation = 8.dp
+                    )
+                ) {
+                    Text(
+                        "Случайный прыжок",
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Medium,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+
+                Divider(color = SoftPink, thickness = 1.dp)
+
+                Button(
                     onClick = {
                         // TODO: Реализовать логику экскурсии по фракталу
                         // viewModel.startFractalTour()
@@ -731,40 +767,6 @@ fun ControlPanel(viewModel: MainViewModel) {
                         textAlign = TextAlign.Center,
                         modifier = Modifier.fillMaxWidth()
                     )
-                }
-
-                Divider(color = SoftPink, thickness = 1.dp)
-
-                Button(
-                    onClick = { viewModel.resetZoom() },
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = ButtonDefaults.buttonColors(
-                        backgroundColor = ButtonColor,
-                        contentColor = Color.White
-                    ),
-                    shape = MaterialTheme.shapes.small,
-                    elevation = ButtonDefaults.elevation(
-                        defaultElevation = 4.dp,
-                        pressedElevation = 8.dp
-                    )
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(6.dp)
-                    ) {
-                        Icon(
-                            Icons.Default.Refresh,
-                            contentDescription = "Сбросить",
-                            modifier = Modifier.size(18.dp)
-                        )
-                        Text(
-                            "Сбросить зум",
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.Medium,
-                            textAlign = TextAlign.Center,
-                            modifier = Modifier.fillMaxWidth()
-                        )
-                    }
                 }
             }
         }
