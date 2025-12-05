@@ -149,7 +149,6 @@ fun main() = application {
 
                     UndoRedoButtons(viewModel)
 
-
                     // Диалог истории
                     if (showHistoryDialog) {
                         AlertDialog(
