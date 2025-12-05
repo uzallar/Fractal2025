@@ -103,7 +103,6 @@ class UndoManager(private val maxSteps: Int = 100) {
 
     fun getDetailedHistoryInfo(): String {
         val info = StringBuilder()
-        info.appendLine("=== ИСТОРИЯ ДЕЙСТВИЙ ===")
         info.appendLine("Назад (${undoStack.size - 1} доступно):")
         undoStack.forEachIndexed { index, state ->
             val prefix = if (index == 0) "Начальное: " else "Шаг ${index}: "

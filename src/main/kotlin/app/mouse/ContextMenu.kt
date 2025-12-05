@@ -1,21 +1,23 @@
 package app.mouse
 
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
+import androidx.compose.material.*
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.rememberCursorPositionProvider
+
+private val CardPink = Color(0xFFFFEBEE)
+private val SoftPink = Color(0xFFF8BBD0)
+private val ButtonColor = Color(0xFFD81B60)
+private val TextDark = Color(0xFF311B92)
 
 @Composable
 fun FractalContextMenu(
@@ -29,37 +31,69 @@ fun FractalContextMenu(
             popupPositionProvider = rememberCursorPositionProvider(),
             onDismissRequest = onDismiss
         ) {
-            Box(
+            Card(
                 modifier = Modifier
-                    .shadow(4.dp)
-                    .background(Color.White)
+                    .shadow(8.dp)
+                    .width(260.dp),
+                backgroundColor = CardPink,
+                elevation = 8.dp
             ) {
-                Column {
-                    if (coordinatesInfo.isNotEmpty()) {
-                        Text(
-                            text = coordinatesInfo,
+                Column(
+                    modifier = Modifier.padding(8.dp)
+                ) {
+                    // Блок с координатами
+                    Card(
+                        backgroundColor = SoftPink,
+                        elevation = 2.dp,
+                        shape = MaterialTheme.shapes.small,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Column(
                             modifier = Modifier
-                                .background(Color(0xFFF5F5F5))
-                                .padding(horizontal = 16.dp, vertical = 8.dp)
-                                .fillMaxWidth(),
-                            fontSize = 12.sp,
-                            color = Color.DarkGray
-                        )
+                                .padding(12.dp)
+                                .fillMaxWidth()
+                        ) {
+                            Text(
+                                text = "Координаты:",
+                                fontSize = 13.sp,
+                                color = TextDark,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                text = coordinatesInfo,
+                                fontSize = 12.sp,
+                                color = TextDark,
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                        }
                     }
 
-                    Box(
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    // Кнопка копирования
+                    Button(
+                        onClick = {
+                            onCopyCoordinates()
+                            onDismiss()
+                        },
                         modifier = Modifier
-                            .clickable {
-                                onCopyCoordinates()
-                                onDismiss()
-                            }
-                            .background(MaterialTheme.colors.surface)
                             .fillMaxWidth()
-                            .padding(horizontal = 16.dp, vertical = 12.dp)
+                            .height(36.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            backgroundColor = ButtonColor,
+                            contentColor = Color.White
+                        ),
+                        shape = MaterialTheme.shapes.small,
+                        elevation = ButtonDefaults.elevation(
+                            defaultElevation = 4.dp,
+                            pressedElevation = 8.dp
+                        )
                     ) {
                         Text(
-                            text = "📋 Копировать координаты",
-                            color = MaterialTheme.colors.onSurface
+                            text = "Копировать координаты",
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Medium
                         )
                     }
                 }
