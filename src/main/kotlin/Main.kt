@@ -610,6 +610,28 @@ fun ControlPanel(viewModel: MainViewModel) {
                         text = "Трикорн",
                         onClick = { viewModel.setTricorn() }
                     )
+
+                    // НОВАЯ КНОПКА: Загрузить фрактал
+                    Button(
+                        onClick = { /* TODO: Реализовать загрузку фрактала */ },
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = ButtonDefaults.buttonColors(
+                            backgroundColor = ButtonColor,
+                            contentColor = Color.White
+                        ),
+                        shape = MaterialTheme.shapes.small,
+                        elevation = ButtonDefaults.elevation(
+                            defaultElevation = 4.dp,
+                            pressedElevation = 8.dp
+                        )
+                    ) {
+                        Text(
+                            "Загрузить фрактал",
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = Color.White
+                        )
+                    }
                 }
 
                 Divider(color = SoftPink, thickness = 1.dp)
