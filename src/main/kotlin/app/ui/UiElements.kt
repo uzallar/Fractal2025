@@ -313,7 +313,6 @@ fun FractalControlPanel(
                 Text("Фракталы:", color = TextDark, fontWeight = FontWeight.Medium, fontSize = 15.sp)
                 FractalButton("Мандельброт") { viewModel.setMandelbrot() }
                 FractalButton("Жюлиа") { viewModel.setJulia() }
-                FractalButton("Горящий корабль") { viewModel.setBurningShip() }
                 FractalButton("Трикорн") { viewModel.setTricorn() }
 
                 Button(
@@ -335,7 +334,7 @@ fun FractalControlPanel(
                 ColorSchemeButton("Стандартная") { viewModel.setStandardColors() }
                 ColorSchemeButton("Огненная") { viewModel.setFireColors() }
                 ColorSchemeButton("Радужная") { viewModel.setRainbowColors() }
-                ColorSchemeButton("Космическая") { viewModel.setCosmicColors() }
+                ColorSchemeButton("Ледяная") { viewModel.setCosmicColors() }
             }
 
             Divider(color = SoftPink, thickness = 1.dp)

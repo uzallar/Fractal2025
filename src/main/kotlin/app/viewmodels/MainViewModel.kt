@@ -20,7 +20,7 @@ import kotlin.math.max
 import app.utils.ExporterJPG
 
 class MainViewModel {
-    var fractalImage: ImageBitmap = ImageBitmap(0, 0)
+    var fractalImage by mutableStateOf(ImageBitmap(0, 0))
     var selectionStart by mutableStateOf(Offset.Zero)
     var selectionEnd by mutableStateOf(Offset.Zero)
     var isSelecting by mutableStateOf(false)
@@ -38,6 +38,7 @@ class MainViewModel {
     var contextMenuPosition by mutableStateOf(Offset.Zero)
     var contextMenuCoordinates by mutableStateOf("")
 
+    private var iterationsOffset by mutableStateOf(0)
 
     private val initialXMin = -2.0
     private val initialXMax = 1.0
@@ -66,7 +67,6 @@ class MainViewModel {
 
     private var mustRepaint by mutableStateOf(true)
 
-    private var iterationsOffset by mutableStateOf(0)
 
     val maxIterations: Int
         get() = getAdjustedMaxIterations()
@@ -138,7 +138,6 @@ class MainViewModel {
         val fractalFunction = when (state.fractalName) {
             "Мандельброт" -> FractalFunctions.mandelbrot
             "Жюлиа" -> FractalFunctions.julia
-            "Горящий корабль" -> FractalFunctions.burningShip
             "Трикорн" -> FractalFunctions.tricorn
             else -> FractalFunctions.mandelbrot
         }
@@ -147,7 +146,7 @@ class MainViewModel {
             "Стандартная" -> ColorSchemes.standard
             "Огненная" -> ColorSchemes.fire
             "Радужная" -> ColorSchemes.rainbow
-            "Космическая" -> ColorSchemes.cosmic
+            "Ледяная" -> ColorSchemes.ice
             else -> ColorSchemes.standard
         }
 
@@ -157,6 +156,7 @@ class MainViewModel {
             colorScheme,
             { getAdjustedMaxIterations() }
         )
+        mustRepaint = true
     }
 
     private fun updateFractalPainter() {
@@ -166,19 +166,6 @@ class MainViewModel {
             fractalPainter.colorScheme,
             { getAdjustedMaxIterations() }
         )
-    }
-
-    fun increaseIterations() {
-        saveCurrentState()
-        iterationsOffset += 100
-        updateFractalPainter()
-        mustRepaint = true
-    }
-
-    fun decreaseIterations() {
-        saveCurrentState()
-        iterationsOffset = max(iterationsOffset - 100, 0)
-        updateFractalPainter()
         mustRepaint = true
     }
 
@@ -228,6 +215,7 @@ class MainViewModel {
             zoomLevel >= 1 -> String.format("%.2fx", zoomLevel)
             else -> String.format("%.4fx", zoomLevel)
         }
+        mustRepaint = true
     }
 
     fun paint(scope: DrawScope) = runBlocking {
@@ -241,14 +229,19 @@ class MainViewModel {
             || fractalImage.height != plain.height.toInt()
         ) {
             launch(Dispatchers.Default) {
-                fractalPainter.paint(scope)
+                fractalImage = fractalPainter.generateImage(scope)
             }
-        } else {
-            scope.drawImage(fractalImage)
+        }
+        // ??? Фигня, допилить
+        if (fractalImage.height != 0 && fractalImage.width != 0 ) {
+            launch(Dispatchers.Default) {
+                fractalPainter.paint(scope, fractalImage)
+            }
         }
         mustRepaint = false
     }
 
+    // ???
     fun onImageUpdate(image: ImageBitmap) {
         fractalImage = image
     }
@@ -332,15 +325,6 @@ class MainViewModel {
         mustRepaint = true
     }
 
-    fun setBurningShip() {
-        resetPanFlag()
-        resetPanFlag()
-        saveCurrentState()
-        fractalPainter = fractalPainter.withFractal(FractalFunctions.burningShip)
-        currentFractalName = "Горящий корабль"
-        mustRepaint = true
-    }
-
     fun setTricorn() {
         resetPanFlag()
         resetPanFlag()
@@ -381,8 +365,8 @@ class MainViewModel {
         resetPanFlag()
         resetPanFlag()
         saveCurrentState()
-        fractalPainter = fractalPainter.withColorScheme(ColorSchemes.cosmic)
-        currentColorSchemeName = "Космическая"
+        fractalPainter = fractalPainter.withColorScheme(ColorSchemes.ice)
+        currentColorSchemeName = "Ледяная"
         mustRepaint = true
     }
 
