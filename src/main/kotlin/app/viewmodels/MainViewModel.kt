@@ -16,8 +16,8 @@ import app.painting.ColorSchemes
 import app.fractal.IterationsCalculator
 import app.mouse.ClipboardService
 import app.history.UndoManager
-import kotlin.math.max
 import app.utils.ExporterJPG
+import app.utils.SoundPlayer
 
 class MainViewModel {
     var fractalImage by mutableStateOf(ImageBitmap(0, 0))
@@ -204,6 +204,7 @@ class MainViewModel {
     private fun updateZoomLevel() {
         val initialWidth = initialXMax - initialXMin
         val currentWidth = plain.xMax - plain.xMin
+        val oldZoom = zoomLevel
 
         zoomLevel = initialWidth / currentWidth
 
@@ -216,6 +217,10 @@ class MainViewModel {
             else -> String.format("%.4fx", zoomLevel)
         }
         mustRepaint = true
+
+        if ((zoomLevel / oldZoom) > 1.05 || (oldZoom / zoomLevel) > 1.05) {
+            SoundPlayer.zoom()
+        }
     }
 
     fun paint(scope: DrawScope) = runBlocking {
