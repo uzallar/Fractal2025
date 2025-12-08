@@ -19,7 +19,7 @@ import kotlin.math.roundToInt
 object ExporterJPG {
 
     fun exportToJpg(
-        painter: FractalPainter,
+        image: ImageBitmap,
         plain: Plain,
         zoomText: String,
         maxIterations: Int
@@ -37,25 +37,10 @@ object ExporterJPG {
             file = File(file.absolutePath + ".jpg")
         }
 
-        val w = plain.width.roundToInt()
-        val h = plain.height.roundToInt()
-        if (w <= 0 || h <= 0) return
+        val h = image.height
+        val w = image.width
 
-        val bitmap = ImageBitmap(w, h)
-
-        runBlocking {
-            CanvasDrawScope().draw(
-                density = Density(1f),
-                layoutDirection = LayoutDirection.Ltr,
-                canvas = androidx.compose.ui.graphics.Canvas(bitmap),
-                size = androidx.compose.ui.geometry.Size(w.toFloat(), h.toFloat())
-            ) {
-                painter.paint(this)
-            }
-        }
-
-
-        val original = bitmap.toAwtImage()
+        val original = image.toAwtImage()
         val padding = 56
         val result = BufferedImage(w, h + padding, BufferedImage.TYPE_INT_RGB)
         val g = result.createGraphics().apply {
