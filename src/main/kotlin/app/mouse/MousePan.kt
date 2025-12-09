@@ -1,19 +1,11 @@
+
 package app.mouse
 
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.input.pointer.PointerEventType
-import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.input.pointer.isPrimaryPressed
-import androidx.compose.ui.input.pointer.isSecondaryPressed
+import androidx.compose.ui.input.pointer.*
 import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.launch
-
-enum class MouseState {
-    IDLE,
-    RIGHT_DRAG,
-    LEFT_SELECTION
-}
+import kotlin.time.TimeSource
 
 fun Modifier.fractalMouseHandlers(
     onRightPanDelta: (Offset) -> Unit = {},
@@ -24,90 +16,71 @@ fun Modifier.fractalMouseHandlers(
 ): Modifier = this.then(
     Modifier.pointerInput(Unit) {
         coroutineScope {
-            launch {
-                awaitPointerEventScope {
-                    var mouseState = MouseState.IDLE
-                    var startPosition = Offset.Zero
+            awaitPointerEventScope {
+                var rightPressPos = Offset.Zero
+                var rightPressTime = TimeSource.Monotonic.markNow()
+                var hasMovedDuringRightPress = false
+                var lastRightPos = Offset.Zero
 
-                    while (true) {
-                        val event = awaitPointerEvent()
+                while (true) {
+                    val event = awaitPointerEvent()
+                    val change = event.changes.first()
 
-                        when (event.type) {
-                            PointerEventType.Press -> {
-                                // Левая кнопка для выделения
-                                if (event.buttons.isPrimaryPressed && !event.buttons.isSecondaryPressed) {
-                                    println("DEBUG: Left button PRESSED for selection")
-                                    mouseState = MouseState.LEFT_SELECTION
-                                    startPosition = event.changes.first().position
-                                    onLeftSelectionStart(startPosition)
-                                    onLeftSelectionUpdate(startPosition)
-                                    event.changes.first().consume()
-                                }
-                                // Правая кнопка для панорамирования
-                                else if (event.buttons.isSecondaryPressed && !event.buttons.isPrimaryPressed) {
-                                    println("DEBUG: Right button PRESSED for panning")
-                                    mouseState = MouseState.RIGHT_DRAG
-                                    startPosition = event.changes.first().position
-                                    event.changes.first().consume()
-                                }
+                    when (event.type) {
+                        PointerEventType.Press -> {
+                            if (event.buttons.isSecondaryPressed && !event.buttons.isPrimaryPressed) {
+                                // ПКМ нажата — начинаем отслеживать возможный клик
+                                rightPressPos = change.position
+                                rightPressTime = TimeSource.Monotonic.markNow()
+                                hasMovedDuringRightPress = false
+                                lastRightPos = change.position
+                                change.consume()
+                            } else if (event.buttons.isPrimaryPressed && !event.buttons.isSecondaryPressed) {
+                                // ЛКМ — только выделение
+                                onLeftSelectionStart(change.position)
+                                change.consume()
+                            }
+                        }
+
+                        PointerEventType.Move -> {
+                            if (event.buttons.isPrimaryPressed) {
+                                onLeftSelectionUpdate(change.position)
+                                change.consume()
                             }
 
-                            PointerEventType.Move -> {
-                                val currentPosition = event.changes.first().position
-
-                                when (mouseState) {
-                                    MouseState.RIGHT_DRAG -> {
-                                        val delta = currentPosition - startPosition
-
-                                        if (delta.x != 0f || delta.y != 0f) {
-                                            println("DEBUG: Panning delta = $delta")
-                                            onRightPanDelta(delta)
-                                            startPosition = currentPosition
-                                        }
-
-                                        event.changes.first().consume()
-                                    }
-                                    MouseState.LEFT_SELECTION -> {
-                                        // Передаем текущую позицию мыши (не дельту)
-                                        println("DEBUG: Selection update at $currentPosition")
-                                        onLeftSelectionUpdate(currentPosition)
-                                        event.changes.first().consume()
-                                    }
-                                    else -> {}
+                            if (event.buttons.isSecondaryPressed) {
+                                val delta = change.position - lastRightPos
+                                if (delta.getDistanceSquared() > 25f) { // > 5px
+                                    hasMovedDuringRightPress = true
+                                    onRightPanDelta(Offset(delta.x, -delta.y))  // инверсия Y
+                                    lastRightPos = change.position
                                 }
+                                change.consume()
+                            }
+                        }
+
+                        PointerEventType.Release -> {
+                            // ЛКМ отпущена
+                            if (!event.buttons.isPrimaryPressed) {
+                                onLeftSelectionUpdate(change.position)
+                                onLeftSelectionEnd()
+                                change.consume()
                             }
 
-                            PointerEventType.Release -> {
-                                when (mouseState) {
-                                    MouseState.RIGHT_DRAG -> {
-                                        val endPosition = event.changes.first().position
-                                        val dx = endPosition.x - startPosition.x
-                                        val dy = endPosition.y - startPosition.y
-                                        val distanceSquared = dx * dx + dy * dy
+                            // ПКМ отпущена — решаем: был ли это настоящий быстрый клик?
+                            if (!event.buttons.isSecondaryPressed) {
+                                val duration = rightPressTime.elapsedNow()
+                                val distance = (change.position - rightPressPos).getDistanceSquared()
 
-                                        println("DEBUG: Right button RELEASED, distance^2 = $distanceSquared")
+                                val isQuickClick = !hasMovedDuringRightPress &&
+                                        distance < 100f &&        // < 10px общее смещение
+                                        duration.inWholeMilliseconds < 300   // < 300 мс
 
-                                        if (distanceSquared < 100f) { // 10px в квадрате
-                                            println("DEBUG: Right CLICK detected at $endPosition")
-                                            onRightClick(endPosition)
-                                        }
-
-                                        mouseState = MouseState.IDLE
-                                        event.changes.first().consume()
-                                    }
-                                    MouseState.LEFT_SELECTION -> {
-                                        val endPosition = event.changes.first().position
-                                        println("DEBUG: Left button RELEASED at $endPosition, ending selection")
-                                        onLeftSelectionUpdate(endPosition)
-                                        onLeftSelectionEnd()
-                                        mouseState = MouseState.IDLE
-                                        event.changes.first().consume()
-                                    }
-                                    else -> {}
+                                if (isQuickClick) {
+                                    onRightClick(change.position)
                                 }
+                                change.consume()
                             }
-
-                            else -> {}
                         }
                     }
                 }
