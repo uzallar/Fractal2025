@@ -38,6 +38,7 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter-params:5.9.2")
     testImplementation(kotlin("test"))
     testImplementation(kotlin("test-junit5"))
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-swing:1.8.0")
 
 
 
