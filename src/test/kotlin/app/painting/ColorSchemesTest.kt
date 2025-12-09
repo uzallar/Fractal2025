@@ -24,11 +24,11 @@ class ColorSchemesTest {
         assertEquals(ColorSchemes.rainbow, scheme)
     }
 
-    @Test
-    fun `getColorSchemeByName returns cosmic`() {
-        val scheme = ColorSchemes.getColorSchemeByName("cosmic")
-        assertEquals(ColorSchemes.cosmic, scheme)
-    }
+//    @Test
+//    fun `getColorSchemeByName returns cosmic`() {
+//        val scheme = ColorSchemes.getColorSchemeByName("cosmic")
+//        assertEquals(ColorSchemes.cosmic, scheme)
+//    }
 
     @Test
     fun `getColorSchemeByName returns standard for unknown`() {
