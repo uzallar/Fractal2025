@@ -15,10 +15,11 @@ import kotlinx.coroutines.*
 // ЖЕСТКИЙ ХАРДКОД (ЯВНО НЕ ПОМЕЧАЮ)
 val bytePixels = ByteArray(2600 * 2600 * 4)
 
-class FractalPainter(private val plain: Plain,
-                     val fractalFunction: FractalFunction,
-                     val colorScheme: ColorScheme,
-                     private val maxIterationsProvider: () -> Int = { 200 }
+class FractalPainter(
+    val plain: Plain,
+    val fractalFunction: FractalFunction,
+    val colorScheme: ColorScheme,
+    private val maxIterationsProvider: () -> Int = { 200 }
 ): Painter {
 
 
