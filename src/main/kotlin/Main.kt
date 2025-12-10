@@ -142,7 +142,9 @@ fun main() = application {
                             onShowHistory = {
                                 viewModel.refreshDetailedHistory()
                                 showHistoryDialog = true
-                            }
+                            },
+                            onToggleInterface = { viewModel.toggleInterface() },
+                            isInterfaceHidden = viewModel.isInterfaceHidden
                         )
                     },
                     bottomBar = {
@@ -214,7 +216,6 @@ fun main() = application {
 fun FractalCanvas(viewModel: MainViewModel) {
     val textMeasurer = rememberTextMeasurer()
     Box(modifier = Modifier.fillMaxSize()) {
-        // ← ВАЖНО: обработчик мыши на Box, а НЕ на Canvas!
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -258,6 +259,7 @@ fun FractalCanvas(viewModel: MainViewModel) {
         }
 
         FractalInfoPanel(
+            viewModel = viewModel,
             canUndo = viewModel.canUndo,
             canRedo = viewModel.canRedo,
             zoomText = viewModel.zoomText,

@@ -25,7 +25,7 @@ class FractalPainter(
         scope.drawImage(image)
     }
 
-    suspend fun generateImage(scope: DrawScope): ImageBitmap {
+    suspend fun generateImage(scope: DrawScope, ): ImageBitmap {
         plain.width = scope.size.width
         plain.height = scope.size.height
 

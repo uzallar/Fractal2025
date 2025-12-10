@@ -24,6 +24,7 @@ dependencies {
     implementation(compose.desktop.currentOs)
     implementation("androidx.lifecycle:lifecycle-viewmodel-desktop:2.9.4")
     implementation(compose.material3)
+    implementation("com.madgag:animated-gif-lib:1.4")
 
 
 
@@ -39,9 +40,6 @@ dependencies {
     testImplementation(kotlin("test"))
     testImplementation(kotlin("test-junit5"))
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-swing:1.8.0")
-
-
-
 
 }
 
