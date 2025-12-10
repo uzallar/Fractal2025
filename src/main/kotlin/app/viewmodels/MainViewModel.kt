@@ -57,7 +57,7 @@ class MainViewModel {
     private var lastWindowWidth: Float = 0f
     private var lastWindowHeight: Float = 0f
 
-    private val plain = Plain(initialXMin, initialXMax, initialYMin, initialYMax)
+    val plain = Plain(initialXMin, initialXMax, initialYMin, initialYMax)
 
     var zoomLevel by mutableStateOf(1.0)
     var zoomText by mutableStateOf("1x")
@@ -717,5 +717,31 @@ class MainViewModel {
             zoomText = zoomText,
             maxIterations = maxIterations
         )
+    }
+    fun updateTypeColorZoom(colorName:String,fractalName: String,plain: Plain,zoomLevel:Double) {
+        resetPanFlag()
+        resetPanFlag()
+        saveCurrentState()
+        this.plain.xMin = plain.xMin
+        this.plain.xMax = plain.xMax
+        this.plain.yMin = plain.yMin
+        this.plain.yMax = plain.xMax
+        fractalPainter = FractalPainter(
+            this.plain,
+            FractalFunctions.getFractalByName(fractalName),
+            ColorSchemes.getColorSchemeByName(colorName)
+        )
+        currentFractalName = fractalName
+        currentColorSchemeName = colorName
+        this.zoomLevel = zoomLevel
+        zoomText = when {
+            zoomLevel >= 1_000_000 -> String.format("%.1fMx", zoomLevel / 1_000_000)
+            zoomLevel >= 1_000 -> String.format("%.1fKx", zoomLevel / 1_000)
+            zoomLevel >= 100 -> String.format("%.0fx", zoomLevel)
+            zoomLevel >= 10 -> String.format("%.1fx", zoomLevel)
+            zoomLevel >= 1 -> String.format("%.2fx", zoomLevel)
+            else -> String.format("%.4fx", zoomLevel)
+        }
+        mustRepaint = true
     }
 }

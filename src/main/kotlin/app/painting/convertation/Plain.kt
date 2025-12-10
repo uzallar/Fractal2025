@@ -1,5 +1,7 @@
 package app.painting.convertation
 
+import java.io.Serializable
+
 data class Plain(
     var xMin: Double,
     var xMax: Double,
@@ -7,7 +9,7 @@ data class Plain(
     var yMax: Double,
     var width: Float = 0f,
     var height: Float = 0f,
-){
+) : Serializable{
     val xDen get() = width / (xMax - xMin)
     val yDen get() = height / (yMax - yMin)
 }

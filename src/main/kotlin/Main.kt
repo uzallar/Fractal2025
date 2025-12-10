@@ -170,8 +170,6 @@ fun main() = application {
     }
 }
 
-
-
 @Composable
 fun FractalCanvas(viewModel: MainViewModel) {
     val textMeasurer = rememberTextMeasurer()
