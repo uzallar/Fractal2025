@@ -1,18 +1,12 @@
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material.icons.filled.Place
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.runtime.*
 import androidx.compose.ui.ExperimentalComposeUiApi
-import androidx.compose.ui.input.key.*
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -22,8 +16,17 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.isCtrlPressed
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onPreviewKeyEvent
+import androidx.compose.ui.input.key.type
+import androidx.compose.ui.input.pointer.PointerIcon
+import androidx.compose.ui.input.pointer.isPrimaryPressed
+import androidx.compose.ui.input.pointer.pointerHoverIcon
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.pointer.pointerMoveFilter
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.rememberTextMeasurer
@@ -41,7 +44,9 @@ import app.ui.FractalInfoPanel
 import app.ui.FractalTopAppBar
 import app.ui.HistoryDialog
 import app.viewmodels.MainViewModel
-
+import java.awt.Point
+import java.awt.Toolkit
+import javax.imageio.ImageIO
 
 
 private val SoftPink = Color(0xFFF8BBD0)
@@ -183,7 +188,23 @@ fun main() = application {
 @Composable
 fun FractalCanvas(viewModel: MainViewModel) {
     val textMeasurer = rememberTextMeasurer()
-
+    val normalCursor = PointerIcon(
+        Toolkit.getDefaultToolkit().createCustomCursor(
+            ImageIO.read(
+                Thread.currentThread().contextClassLoader.getResourceAsStream("normal.jpg")),
+            Point(0, 0),
+            "normalCursor"
+        )
+    )
+    val holdCursor = PointerIcon(
+        Toolkit.getDefaultToolkit().createCustomCursor(
+            ImageIO.read(
+                Thread.currentThread().contextClassLoader.getResourceAsStream("hold.jpg")),
+            Point(0, 0),
+            "holdCursor"
+        )
+    )
+    var isHolding by remember { mutableStateOf(false) }
     Box(modifier = Modifier.fillMaxSize()) {
         // ← ВАЖНО: обработчик мыши на Box, а НЕ на Canvas!
         Box(
@@ -197,6 +218,14 @@ fun FractalCanvas(viewModel: MainViewModel) {
                     onLeftSelectionUpdate = { viewModel.onSelecting(it) },
                     onLeftSelectionEnd = { viewModel.onStopSelecting() }
                 )
+                .pointerHoverIcon(if (isHolding) holdCursor else normalCursor)
+                .pointerInput(Unit) {
+                    awaitPointerEventScope {
+                        while (true) {
+                            isHolding = awaitPointerEvent().buttons.isPrimaryPressed
+                        }
+                    }
+                }
         ) {
 
             Canvas(
