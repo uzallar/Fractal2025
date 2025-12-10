@@ -54,6 +54,19 @@ compose.desktop {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = "Fractal2025"
             packageVersion = "1.0.0"
+
+            macOS {
+                iconFile.set(project.file("src/main/resources/icon.icns")) // или путь к вашему .icns
+                // bundleID = "com.example.fractals" // желательно указать
+            }
+
+            windows {
+                iconFile.set(project.file("src/main/resources/icon.ico"))
+            }
+
+            linux {
+                iconFile.set(project.file("src/main/resources/icon.png"))
+            }
         }
     }
 }

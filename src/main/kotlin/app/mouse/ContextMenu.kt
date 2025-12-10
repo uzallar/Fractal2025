@@ -41,7 +41,6 @@ fun FractalContextMenu(
                 Column(
                     modifier = Modifier.padding(8.dp)
                 ) {
-                    // Блок с координатами
                     Card(
                         backgroundColor = SoftPink,
                         elevation = 2.dp,
@@ -71,7 +70,6 @@ fun FractalContextMenu(
 
                     Spacer(modifier = Modifier.height(8.dp))
 
-                    // Кнопка копирования
                     Button(
                         onClick = {
                             onCopyCoordinates()
