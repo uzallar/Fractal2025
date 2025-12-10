@@ -10,8 +10,8 @@ import java.io.Serializable
 
 class FractalSaving (
     var selectionStart: Offset, var selectionEnd: Offset, var fractalName: String,
-    var color: String) : Serializable {
-    constructor() : this(Offset.Zero, Offset.Zero, String(), "",)
+    var color: String,var plain: Plain) : Serializable {
+    constructor() : this(Offset.Zero, Offset.Zero, String(), "", Plain(0.0,0.0,0.0,0.0))
     /**
      * Сохранение объекта в файл с расширением .fractal
      */
@@ -36,7 +36,9 @@ class FractalSaving (
             selectionEnd = l.selectionEnd
             fractalName = l.fractalName
             color = l.color
+            plain = l.plain
         }
+
     }
 
 }
