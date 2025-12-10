@@ -19,11 +19,15 @@ import app.history.UndoManager
 import app.tour.FractalTour
 import app.tour.TourFrame
 import app.utils.ExporterJPG
+import app.utils.FractalSaving
 import app.utils.SoundPlayer
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
+import java.awt.FileDialog
+import java.awt.Frame
+import javax.swing.JOptionPane
 
 
 class MainViewModel {
@@ -46,7 +50,6 @@ class MainViewModel {
     var contextMenuCoordinates by mutableStateOf("")
 
     private var iterationsOffset by mutableStateOf(0)
-
 
     private val initialXMin = -2.0
     private val initialXMax = 1.0
@@ -298,6 +301,7 @@ class MainViewModel {
         state?.let { restoreState(it) }
         updateHistoryInfo()
     }
+
     private fun restoreState(state: app.history.FractalState) {
         plain.xMin = state.plain.xMin
         plain.xMax = state.plain.xMax
@@ -309,7 +313,6 @@ class MainViewModel {
         iterationsOffset = state.iterationsOffset
         currentFractalName = state.fractalName
         currentColorSchemeName = state.colorSchemeName
-
 
         updateFractalPainterWithState(state)
         updateZoomTextFromLevel()

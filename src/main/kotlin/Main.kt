@@ -42,6 +42,8 @@ import app.ui.FractalTopAppBar
 import app.ui.HistoryDialog
 import app.viewmodels.MainViewModel
 
+
+
 private val SoftPink = Color(0xFFF8BBD0)
 private val LightPink = Color(0xFFF48FB1)
 private val MediumPink = Color(0xFFEC407A)
@@ -176,11 +178,14 @@ fun main() = application {
     }
 }
 
+
+
 @Composable
 fun FractalCanvas(viewModel: MainViewModel) {
     val textMeasurer = rememberTextMeasurer()
 
     Box(modifier = Modifier.fillMaxSize()) {
+        // ← ВАЖНО: обработчик мыши на Box, а НЕ на Canvas!
         Box(
             modifier = Modifier
                 .fillMaxSize()

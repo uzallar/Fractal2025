@@ -68,8 +68,6 @@ compose.desktop {
                 iconFile.set(project.file("src/main/resources/icon.png"))
             }
         }
-
-
     }
 }
 tasks.withType<Test> {
