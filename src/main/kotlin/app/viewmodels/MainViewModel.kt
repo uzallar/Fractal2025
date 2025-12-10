@@ -50,7 +50,7 @@ class MainViewModel {
     private var lastWindowWidth: Float = 0f
     private var lastWindowHeight: Float = 0f
 
-    private val plain = Plain(initialXMin, initialXMax, initialYMin, initialYMax)
+    val plain = Plain(initialXMin, initialXMax, initialYMin, initialYMax)
 
     var zoomLevel by mutableStateOf(1.0)
     var zoomText by mutableStateOf("1x")
@@ -539,11 +539,11 @@ class MainViewModel {
             maxIterations = maxIterations
         )
     }
-    fun updateTypeColorZoom(colorName:String,fractalName: String,selectionStart: Offset,selectionEnd:Offset){
+    fun updateTypeColorZoom(colorName:String,fractalName: String,selectionStart: Offset,selectionEnd:Offset,plain: Plain) {
+        resetPanFlag()
         resetPanFlag()
         saveCurrentState()
         val currentAspect = plain.width / plain.height
-
         if (currentAspect > initialFractalAspect) {
             val width = (initialYMax - initialYMin) * currentAspect
             plain.xMin = -width / 2
@@ -562,11 +562,12 @@ class MainViewModel {
         lastWindowHeight = plain.height
         zoomLevel = 1.0
         zoomText = "1x"
-        resetPanFlag()
-        resetPanFlag()
-        fractalPainter = fractalPainter.withFractal(FractalFunctions.getFractalByName(fractalName))
+        this.plain.xMin = plain.xMin
+        this.plain.xMax = plain.xMax
+        this.plain.yMin = plain.yMin
+        this.plain.yMax = plain.yMax
+        fractalPainter = FractalPainter(this.plain, FractalFunctions.getFractalByName(fractalName), ColorSchemes.getColorSchemeByName(colorName))
         currentFractalName = fractalName
-        fractalPainter = fractalPainter.withColorScheme(ColorSchemes.getColorSchemeByName(colorName))
         currentColorSchemeName = colorName
         this.selectionStart = selectionStart
         this.selectionEnd = selectionEnd

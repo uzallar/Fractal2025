@@ -333,7 +333,7 @@ fun FractalControlPanel(
                             val save = FractalSaving()
                             try {
                                 save.loadFractalObject(dir, file)
-                                viewModel.updateTypeColorZoom(save.color,save.fractalName,save.selectionStart,save.selectionEnd)
+                                viewModel.updateTypeColorZoom(save.color,save.fractalName,save.selectionStart,save.selectionEnd,save.plain)
                             }
                             catch (_: Exception) {
                                 JOptionPane.showMessageDialog(
@@ -385,7 +385,8 @@ fun FractalControlPanel(
                                     viewModel.selectionStart,
                                     viewModel.selectionEnd,
                                     viewModel.currentFractalName,
-                                    viewModel.currentColorSchemeName
+                                    viewModel.currentColorSchemeName,
+                                    viewModel.plain
                                 )
                                 save.saveFractalObject(file)
                             }
