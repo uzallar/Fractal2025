@@ -26,6 +26,7 @@ import androidx.compose.ui.input.pointer.isPrimaryPressed
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.pointer.pointerMoveFilter
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.drawText
@@ -69,7 +70,8 @@ fun main() = application {
             viewModel.onAppClosing()
             exitApplication()
         },
-        title = "Фракталы"
+        title = "Фракталы",
+        icon = painterResource("icon.ico")
     ) {
         val normalCursor = PointerIcon(
             Toolkit.getDefaultToolkit().createCustomCursor(

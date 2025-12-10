@@ -43,7 +43,7 @@ class MainViewModelSelectionTest {
         val initialPlain = vm.currentPlain.copy()
 
         vm.onStartSelecting(Offset(10f, 10f))
-        vm.onSelecting(Offset(15f, 15f)) // Маленькая область (<10px)
+        vm.onSelecting(Offset(15f, 15f))
         vm.onStopSelecting()
 
         assertEquals(initialPlain.xMin, vm.currentPlain.xMin, 0.001)

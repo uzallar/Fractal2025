@@ -48,7 +48,6 @@ class MainViewModelZoomNavigationTest {
 
         vm.randomJump()
 
-        // После прыжка масштаб должен измениться
         assertNotEquals(initialZoom, vm.zoomText)
     }
 }

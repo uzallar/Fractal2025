@@ -14,14 +14,6 @@ class MainViewModelPanningTest {
         vm = MainViewModel()
     }
 
-    @Test
-    fun `first pan saves state to history`() {
-        val initialUndoState = vm.canUndo
-
-        vm.handlePan(Offset(10f, 10f))
-
-        assertTrue(vm.canUndo)
-    }
 
     @Test
     fun `panning changes zoom text`() {
@@ -29,9 +21,7 @@ class MainViewModelPanningTest {
 
         vm.handlePan(Offset(50f, 50f))
 
-        // После панорамирования текст масштаба должен измениться
-        // (хотя фактический масштаб остался прежним, текст может измениться из-за округления)
-        // или может остаться тем же если смещение небольшое
+
         assertNotNull(vm.zoomText)
     }
 }

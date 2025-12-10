@@ -38,7 +38,6 @@ class MainViewModelContextMenuTest {
     fun `context menu coordinates contain numbers`() {
         vm.showContextMenuAt(Offset(100f, 100f))
 
-        // Координаты должны содержать числа
         assertTrue(vm.contextMenuCoordinates.contains(Regex("[-\\d.]+")))
     }
 }
