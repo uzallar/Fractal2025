@@ -6,11 +6,10 @@ import kotlin.math.abs
 
 typealias FractalFunction = (Double, Double, Int) -> Float
 
-const val escapeRadius = 2.0
+const val escapeRR = 4.0
 
 object FractalFunctions {
     val mandelbrot: FractalFunction = { xc, yc, maxIterations ->
-        val escapeRR = escapeRadius * escapeRadius
         var x = 0.0
         var y = 0.0
 
@@ -32,9 +31,7 @@ object FractalFunctions {
         n.toFloat() / maxIterations
     }
 
-
     val julia: FractalFunction =  { _x, _y, maxIterations ->
-        val escapeRR = escapeRadius * escapeRadius
         val xc = -0.7
         val yc = 0.27015
         var x = _x
@@ -58,7 +55,6 @@ object FractalFunctions {
     }
 
     val tricorn: FractalFunction = { xc, yc, maxIterations ->
-        val escapeRR = escapeRadius * escapeRadius
         var x = 0.0
         var y = 0.0
 
@@ -80,7 +76,6 @@ object FractalFunctions {
     }
 
     val cubicMandelbrot: FractalFunction = { xc, yc, maxIterations ->
-        val escapeRR = escapeRadius * escapeRadius
         var x = 0.0
         var y = 0.0
 
@@ -108,7 +103,7 @@ object FractalFunctions {
             "mandelbrot", "мандельброт" -> mandelbrot
             "julia", "жюлиа" -> julia
             "tricorn", "трикорн" -> tricorn
-            //"cubic", "кубический" -> cubicMandelbrot
+            "cubic", "кубический" -> cubicMandelbrot
             else -> mandelbrot
         }
     }

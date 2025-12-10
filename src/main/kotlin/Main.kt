@@ -4,6 +4,12 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Place
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.runtime.*
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.input.key.*
@@ -18,7 +24,6 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.isCtrlPressed
 import androidx.compose.ui.input.pointer.pointerMoveFilter
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.rememberTextMeasurer
@@ -58,47 +63,47 @@ fun main() = application {
         onCloseRequest = {
             viewModel.onAppClosing()
             exitApplication()
-
         },
-        title = "Фракталы" ,
-        icon = painterResource("icon.ico")
+        title = "Фракталы"
     ) {
-        // Обработка горячих клавиш
-        LaunchedEffect(Unit) {
-        }
-
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .onPreviewKeyEvent { keyEvent ->
-                    when {
-                        // Ctrl+Z - отмена
-                        keyEvent.key == Key.Z && keyEvent.isCtrlPressed && keyEvent.type == KeyEventType.KeyDown -> {
-                            viewModel.undo()
-                            true
-                        }
-                        // Ctrl+Y
-                        (keyEvent.key == Key.Y && keyEvent.isCtrlPressed && keyEvent.type == KeyEventType.KeyDown) ||
-                                (keyEvent.key == Key.Z && keyEvent.isCtrlPressed && keyEvent.isShiftPressed && keyEvent.type == KeyEventType.KeyDown) -> {
-                            viewModel.redo()
-                            true
-                        }
-                        else -> false
-                    }
-                }
+        MaterialTheme(
+            colors = MaterialTheme.colors.copy(
+                primary = MediumPink,
+                primaryVariant = DarkPink,
+                secondary = LightPink,
+                background = BackgroundPink,
+                surface = CardPink,
+                onPrimary = Color.White,
+                onSecondary = Color.White,
+                onBackground = TextDark,
+                onSurface = TextDark
+            )
         ) {
-            MaterialTheme(
-                colors = MaterialTheme.colors.copy(
-                    primary = MediumPink,
-                    primaryVariant = DarkPink,
-                    secondary = LightPink,
-                    background = BackgroundPink,
-                    surface = CardPink,
-                    onPrimary = Color.White,
-                    onSecondary = Color.White,
-                    onBackground = TextDark,
-                    onSurface = TextDark
-                )
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .onPreviewKeyEvent { keyEvent ->
+                        when {
+                            keyEvent.key == Key.Z && keyEvent.isCtrlPressed && keyEvent.type == KeyEventType.KeyDown -> {
+                                println("Ctrl+Z pressed - calling undo")
+                                viewModel.undo()
+                                true
+                            }
+
+                            keyEvent.key == Key.Y && keyEvent.isCtrlPressed && keyEvent.type == KeyEventType.KeyDown -> {
+                                println("Ctrl+Y pressed - calling redo")
+                                viewModel.redo()
+                                true
+                            }
+
+                            keyEvent.key == Key.R && keyEvent.isCtrlPressed && keyEvent.type == KeyEventType.KeyDown -> {
+                                println("Ctrl+R pressed - resetting zoom")
+                                viewModel.resetZoom()
+                                true
+                            }
+                            else -> false
+                        }
+                    }
             ) {
                 Scaffold(
                     topBar = {
@@ -187,13 +192,14 @@ fun FractalCanvas(viewModel: MainViewModel) {
                 .fillMaxSize()
                 .fractalMouseHandlers(
                     onRightPanDelta = { delta -> viewModel.handlePan(delta) },
+                    onRightPanEnd = { viewModel.finishPanning() },
                     onRightClick = { position -> viewModel.showContextMenuAt(position) },
                     onLeftSelectionStart = { viewModel.onStartSelecting(it) },
                     onLeftSelectionUpdate = { viewModel.onSelecting(it) },
                     onLeftSelectionEnd = { viewModel.onStopSelecting() }
                 )
         ) {
-            // Теперь Canvas внутри — он не будет перехватывать события
+
             Canvas(
                 modifier = Modifier
                     .fillMaxSize()

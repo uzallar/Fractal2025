@@ -9,7 +9,6 @@ import kotlin.math.PI
 
 typealias ColorScheme = (Float) -> Int
 
-
 object ColorSchemes {
     val standard: ColorScheme = { probability ->
         if (probability == 1f) {

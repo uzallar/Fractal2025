@@ -57,14 +57,19 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import app.painting.convertation.Plain
 import app.tour.TourFrame
+import app.utils.FractalSaving
 import app.viewmodels.MainViewModel
 import kotlinx.coroutines.launch
+import java.awt.FileDialog
+import java.awt.Frame
+import java.io.File
+import javax.swing.JOptionPane
 
 @Composable
 fun PaintPanel(
     modifier: Modifier = Modifier,
-    onImageUpdate: (ImageBitmap)->Unit = {},
-    onPaint: (DrawScope)->Unit = {},
+    onImageUpdate: (ImageBitmap) -> Unit = {},
+    onPaint: (DrawScope) -> Unit = {},
 ) {
     val graphicsLayer = rememberGraphicsLayer()
     val scope = rememberCoroutineScope()
@@ -91,12 +96,14 @@ fun SelectionPanel(
     onDragStart: (Offset) -> Unit = {},
     onDragEnd: () -> Unit = {},
     onDrag: (Offset) -> Unit = {},
-){
-    Canvas(modifier = modifier.onDrag(
-        onDragStart = onDragStart,
-        onDragEnd = onDragEnd,
-        onDrag = onDrag,
-    )){
+) {
+    Canvas(
+        modifier = modifier.onDrag(
+            onDragStart = onDragStart,
+            onDragEnd = onDragEnd,
+            onDrag = onDrag,
+        )
+    ) {
         this.drawRect(Color.Blue, offset, size, alpha = 0.2f)
     }
 }
@@ -115,8 +122,8 @@ private val DisabledPink = Color(0xFFF8C1D9)
 fun FractalTopAppBar(
     currentFractalName: String,
     onShowHistory: () -> Unit,
-    onToggleInterface: () -> Unit,  // ← новое
-    isInterfaceHidden: Boolean,     // ← новое
+    onToggleInterface: () -> Unit,  // ← новый обязательный параметр
+    isInterfaceHidden: Boolean,     // ← новый обязательный параметр
     modifier: Modifier = Modifier
 ) {
     TopAppBar(
@@ -212,6 +219,7 @@ fun FractalBottomBar(
     }
 }
 
+// UiElements.kt
 
 @Composable
 fun FractalInfoPanel(
@@ -357,19 +365,38 @@ fun FractalControlPanel(
                         enabled = !(viewModel.isRecordingTour || viewModel.isTourRunning)
                     ) { viewModel.setTricorn() }
                     Button(
-                        onClick = { /* TODO */ },
+                        onClick = {
+                            val dialog = FileDialog(null as Frame?, "Выберите файл", FileDialog.LOAD)
+                            dialog.isVisible = true
+                            val file = dialog.file
+                            val dir = dialog.directory
+                            if (file != null && dir != null) {
+                                val save = FractalSaving()
+                                try {
+                                    save.loadFractalObject(dir, file)
+                                    viewModel.updateTypeColorZoom(
+                                        save.color,
+                                        save.fractalName,
+                                        save.plain,
+                                        save.zoomLevel
+                                    )
+                                } catch (_: Exception) {
+                                    JOptionPane.showMessageDialog(
+                                        null,                // родительское окно (null = центр экрана)
+                                        "Файл не найден",             // текст сообщения
+                                        "Сообщение",         // заголовок окна
+                                        JOptionPane.INFORMATION_MESSAGE // тип иконки
+                                    )
+                                }
+                            }
+                        },
                         modifier = Modifier.fillMaxWidth(),
                         colors = ButtonDefaults.buttonColors(backgroundColor = ButtonColor, contentColor = Color.White),
                         shape = MaterialTheme.shapes.small,
                         elevation = ButtonDefaults.elevation(4.dp, 8.dp),
                         enabled = !(viewModel.isRecordingTour || viewModel.isTourRunning)
                     ) {
-                        Text(
-                            "Загрузить фрактал",
-                            fontSize = 13.sp,
-                            fontWeight = FontWeight.Medium,
-                            textAlign = TextAlign.Center
-                        )
+                        Text("Загрузить фрактал", fontSize = 13.sp, fontWeight = FontWeight.Medium)
                     }
                 }
 
@@ -386,21 +413,40 @@ fun FractalControlPanel(
 
                 Divider(color = SoftPink, thickness = 1.dp)
 
+                // Сохранение
                 Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                     Text("Сохранить как:", color = TextDark, fontWeight = FontWeight.Medium, fontSize = 15.sp)
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         Button(
-                            onClick = { }, modifier = Modifier.weight(1f).height(40.dp),
+                            onClick = {
+                                val fd = FileDialog(null as Frame?, "Сохранить файл", FileDialog.SAVE)
+                                fd.isVisible = true
+                                if (fd.file != null) {
+                                    var filename = fd.file
+                                    var file: File? = null
+                                    // если пользователь не добавил расширение вручную — добавим
+                                    if (!filename.endsWith(".fractal")) filename = "$filename.fractal"
+                                    if (fd.directory.endsWith('/')) filename = "/$filename"
+                                    file = File(fd.directory + filename)
+                                    val save = FractalSaving(
+                                        viewModel.currentFractalName,
+                                        viewModel.currentColorSchemeName,
+                                        viewModel.currentPlain,
+                                        viewModel.zoomLevel
+                                    )
+                                    save.saveFractalObject(file)
+                                }
+                            }, modifier = Modifier.weight(1f).height(40.dp),
                             colors = ButtonDefaults.buttonColors(
                                 backgroundColor = ButtonColor,
                                 contentColor = Color.White
                             )
                         ) {
                             Text(
-                                "Fractal",
+                                ".fract",
                                 fontSize = 13.sp,
                                 textAlign = TextAlign.Center,
-                                modifier = Modifier.fillMaxWidth()
+                                modifier = Modifier.fillMaxWidth(),
                             )
                         }
                         Button(
@@ -515,6 +561,7 @@ fun FractalControlPanel(
         }
     }
 }
+
 @Composable
 fun FractalButton(text: String, enabled: Boolean = true, onClick: () -> Unit) {
     Button(

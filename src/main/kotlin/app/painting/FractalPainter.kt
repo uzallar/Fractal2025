@@ -21,13 +21,11 @@ class FractalPainter(
     val colorScheme: ColorScheme,
     private val maxIterationsProvider: () -> Int = { 200 }
 ): Painter {
-
-
     override suspend fun paint(scope: DrawScope, image: ImageBitmap){
         scope.drawImage(image)
     }
 
-    suspend fun generateImage(scope: DrawScope): ImageBitmap {
+    suspend fun generateImage(scope: DrawScope, ): ImageBitmap {
         plain.width = scope.size.width
         plain.height = scope.size.height
 
