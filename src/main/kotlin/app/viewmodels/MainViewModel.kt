@@ -45,7 +45,6 @@ class MainViewModel {
     var contextMenuPosition by mutableStateOf(Offset.Zero)
     var contextMenuCoordinates by mutableStateOf("")
 
-    private var iterationsOffset by mutableStateOf(0)
 
     private val initialXMin = -2.0
     private val initialXMax = 1.0
@@ -57,13 +56,13 @@ class MainViewModel {
     private var lastWindowWidth: Float = 0f
     private var lastWindowHeight: Float = 0f
 
-    val plain = Plain(initialXMin, initialXMax, initialYMin, initialYMax)
+    private val plain = Plain(initialXMin, initialXMax, initialYMin, initialYMax)
 
     var zoomLevel by mutableStateOf(1.0)
     var zoomText by mutableStateOf("1x")
 
 
-    var fractalPainter by mutableStateOf(
+    private var fractalPainter by mutableStateOf(
         FractalPainter(
             plain,
             FractalFunctions.mandelbrot,
@@ -74,6 +73,7 @@ class MainViewModel {
 
     private var mustRepaint by mutableStateOf(true)
 
+    private var iterationsOffset by mutableStateOf(0)
 
     val maxIterations: Int
         get() = getAdjustedMaxIterations()
