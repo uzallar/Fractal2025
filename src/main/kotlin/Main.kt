@@ -71,6 +71,23 @@ fun main() = application {
         },
         title = "Фракталы"
     ) {
+        val normalCursor = PointerIcon(
+            Toolkit.getDefaultToolkit().createCustomCursor(
+                ImageIO.read(
+                    Thread.currentThread().contextClassLoader.getResourceAsStream("normal.jpg")),
+                Point(0, 0),
+                "normalCursor"
+            )
+        )
+        val holdCursor = PointerIcon(
+            Toolkit.getDefaultToolkit().createCustomCursor(
+                ImageIO.read(
+                    Thread.currentThread().contextClassLoader.getResourceAsStream("hold.jpg")),
+                Point(0, 0),
+                "holdCursor"
+            )
+        )
+        var isHolding by remember { mutableStateOf(false) }
         MaterialTheme(
             colors = MaterialTheme.colors.copy(
                 primary = MediumPink,
@@ -107,6 +124,14 @@ fun main() = application {
                                 true
                             }
                             else -> false
+                        }
+                    }
+                    .pointerHoverIcon(if (isHolding) holdCursor else normalCursor)
+                    .pointerInput(Unit) {
+                        awaitPointerEventScope {
+                            while (true) {
+                                isHolding = awaitPointerEvent().buttons.isPrimaryPressed
+                            }
                         }
                     }
             ) {
@@ -188,23 +213,6 @@ fun main() = application {
 @Composable
 fun FractalCanvas(viewModel: MainViewModel) {
     val textMeasurer = rememberTextMeasurer()
-    val normalCursor = PointerIcon(
-        Toolkit.getDefaultToolkit().createCustomCursor(
-            ImageIO.read(
-                Thread.currentThread().contextClassLoader.getResourceAsStream("normal.jpg")),
-            Point(0, 0),
-            "normalCursor"
-        )
-    )
-    val holdCursor = PointerIcon(
-        Toolkit.getDefaultToolkit().createCustomCursor(
-            ImageIO.read(
-                Thread.currentThread().contextClassLoader.getResourceAsStream("hold.jpg")),
-            Point(0, 0),
-            "holdCursor"
-        )
-    )
-    var isHolding by remember { mutableStateOf(false) }
     Box(modifier = Modifier.fillMaxSize()) {
         // ← ВАЖНО: обработчик мыши на Box, а НЕ на Canvas!
         Box(
@@ -218,14 +226,6 @@ fun FractalCanvas(viewModel: MainViewModel) {
                     onLeftSelectionUpdate = { viewModel.onSelecting(it) },
                     onLeftSelectionEnd = { viewModel.onStopSelecting() }
                 )
-                .pointerHoverIcon(if (isHolding) holdCursor else normalCursor)
-                .pointerInput(Unit) {
-                    awaitPointerEventScope {
-                        while (true) {
-                            isHolding = awaitPointerEvent().buttons.isPrimaryPressed
-                        }
-                    }
-                }
         ) {
 
             Canvas(
