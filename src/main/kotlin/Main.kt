@@ -18,6 +18,7 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.isCtrlPressed
 import androidx.compose.ui.input.pointer.pointerMoveFilter
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.rememberTextMeasurer
@@ -57,8 +58,10 @@ fun main() = application {
         onCloseRequest = {
             viewModel.onAppClosing()
             exitApplication()
+
         },
-        title = "Фракталы"
+        title = "Фракталы" ,
+        icon = painterResource("icon.ico")
     ) {
         // Обработка горячих клавиш
         LaunchedEffect(Unit) {
@@ -104,7 +107,9 @@ fun main() = application {
                             onShowHistory = {
                                 viewModel.refreshDetailedHistory()
                                 showHistoryDialog = true
-                            }
+                            },
+                            onToggleInterface = { viewModel.toggleInterface() },
+                            isInterfaceHidden = viewModel.isInterfaceHidden
                         )
                     },
                     bottomBar = {
@@ -177,7 +182,6 @@ fun FractalCanvas(viewModel: MainViewModel) {
     val textMeasurer = rememberTextMeasurer()
 
     Box(modifier = Modifier.fillMaxSize()) {
-        // ← ВАЖНО: обработчик мыши на Box, а НЕ на Canvas!
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -220,6 +224,7 @@ fun FractalCanvas(viewModel: MainViewModel) {
         }
 
         FractalInfoPanel(
+            viewModel = viewModel,
             canUndo = viewModel.canUndo,
             canRedo = viewModel.canRedo,
             zoomText = viewModel.zoomText,

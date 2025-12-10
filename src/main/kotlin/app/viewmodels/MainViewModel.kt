@@ -19,13 +19,13 @@ import app.history.UndoManager
 import app.tour.FractalTour
 import app.tour.TourFrame
 import app.utils.ExporterJPG
+import app.utils.MusicPlayer
 import app.utils.SoundPlayer
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
-import kotlin.math.exp
-import kotlin.math.ln
+
 
 class MainViewModel {
     var fractalImage by mutableStateOf(ImageBitmap(0, 0))
@@ -47,6 +47,12 @@ class MainViewModel {
     var contextMenuCoordinates by mutableStateOf("")
 
     private var iterationsOffset by mutableStateOf(0)
+
+    var isInterfaceHidden by mutableStateOf(false)
+
+    fun toggleInterface() {
+        isInterfaceHidden = !isInterfaceHidden
+    }
 
     private val initialXMin = -2.0
     private val initialXMax = 1.0
@@ -104,7 +110,11 @@ class MainViewModel {
     fun startTour(tour: FractalTour) {
         if (isTourRunning) return
         isTourRunning = true
+        isInterfaceHidden = true
         tourJob = viewModelScope.launch {
+            val wasSoundEnabled = SoundPlayer.isEnabled
+            SoundPlayer.isEnabled = false
+            MusicPlayer.play("interstellar_theme.wav")
             try {
                 while (true) {
                     for (i in 0 until tour.frames.size - 1) {
@@ -114,6 +124,9 @@ class MainViewModel {
                     if (!tour.loop) break
                 }
             } finally {
+                isTourRunning = false
+                SoundPlayer.isEnabled = wasSoundEnabled
+                MusicPlayer.stop()
                 isTourRunning = false
             }
         }
@@ -129,7 +142,7 @@ class MainViewModel {
     }
 
     fun saveAndStartTour() {
-        if (currentTourFrames.size < 2) return // минимум 2 кадра
+        if (currentTourFrames.size < 2) return
         currentTour = FractalTour(
             name = tourName.ifBlank { "Экскурсия ${System.currentTimeMillis()}" },
             frames = currentTourFrames,
@@ -554,7 +567,6 @@ class MainViewModel {
     }
 
     fun handlePan(delta: Offset) {
-
         // Если еще не начали панорамировать - сохраняем состояние
         if (!isPanning) {
             saveCurrentState()
@@ -569,6 +581,9 @@ class MainViewModel {
         plain.xMax -= dx * xRange
         plain.yMin -= dy * yRange
         plain.yMax -= dy * yRange
+
+        // Воспроизводим звук сдвига
+        SoundPlayer.pan()
 
         updateZoomLevel()
         mustRepaint = true

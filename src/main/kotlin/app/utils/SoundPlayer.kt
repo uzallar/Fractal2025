@@ -6,13 +6,16 @@ import javax.sound.sampled.AudioSystem
 import javax.sound.sampled.LineEvent
 
 object SoundPlayer {
-    private var lastPlayTime = 0L
-    private const val MIN_DELAY_MS = 80L  // антиспам — не больше 12 звуков в секунду
+    private var lastZoomTime = 0L
+    private var lastPanTime = 0L
+    private const val MIN_DELAY_ZOOM_MS = 80L
+    private const val MIN_DELAY_PAN_MS = 2600L  // разная задержка для разных звуков
+    var isEnabled = true
 
-    fun play(soundName: String) {
+    private fun playSound(soundName: String, lastPlayTime: Long, minDelay: Long): Long {
+        if (!isEnabled) return lastPlayTime
         val now = System.currentTimeMillis()
-        if (now - lastPlayTime < MIN_DELAY_MS) return
-        lastPlayTime = now
+        if (now - lastPlayTime < minDelay) return lastPlayTime
 
         Thread {
             try {
@@ -34,11 +37,18 @@ object SoundPlayer {
                     }
                 }
             } catch (e: Exception) {
-                // Звук не сработал — молчим, чтобы не падало приложение
+                // Звук не сработал — молчим
             }
         }.start()
+
+        return now
     }
 
+    fun zoom() {
+        lastZoomTime = playSound("мяу.wav", lastZoomTime, MIN_DELAY_ZOOM_MS)
+    }
 
-    fun zoom() = play("zoom.wav")
+    fun pan() {
+        lastPanTime = playSound("мур.wav", lastPanTime, MIN_DELAY_PAN_MS)
+    }
 }

@@ -115,6 +115,8 @@ private val DisabledPink = Color(0xFFF8C1D9)
 fun FractalTopAppBar(
     currentFractalName: String,
     onShowHistory: () -> Unit,
+    onToggleInterface: () -> Unit,  // ← новое
+    isInterfaceHidden: Boolean,     // ← новое
     modifier: Modifier = Modifier
 ) {
     TopAppBar(
@@ -129,9 +131,18 @@ fun FractalTopAppBar(
         elevation = 8.dp,
         actions = {
             IconButton(
-                onClick = {
-                    onShowHistory()
-                },
+                onClick = onToggleInterface,
+                modifier = Modifier.padding(horizontal = 4.dp)
+            ) {
+                if (isInterfaceHidden) {
+                    Text("👁", fontSize = 18.sp, modifier = Modifier.size(28.dp), textAlign = TextAlign.Center)
+                } else {
+                    Text("🙈", fontSize = 18.sp, modifier = Modifier.size(28.dp), textAlign = TextAlign.Center)
+                }
+            }
+
+            IconButton(
+                onClick = onShowHistory,
                 modifier = Modifier.padding(end = 8.dp)
             ) {
                 Icon(
@@ -201,10 +212,10 @@ fun FractalBottomBar(
     }
 }
 
-// UiElements.kt
 
 @Composable
 fun FractalInfoPanel(
+    viewModel: MainViewModel,
     canUndo: Boolean,
     canRedo: Boolean,
     zoomText: String,
@@ -215,81 +226,100 @@ fun FractalInfoPanel(
     onResetZoom: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Card(
-        backgroundColor = CardPink.copy(alpha = 0.9f),
-        elevation = 8.dp,
-        shape = MaterialTheme.shapes.medium,
-        modifier = modifier
-            .wrapContentSize()
-            .padding(start = 16.dp, top = 16.dp)
-    ) {
-        Row(
-            modifier = Modifier.padding(8.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalAlignment = Alignment.CenterVertically
+    if (!viewModel.isInterfaceHidden) {
+        Card(
+            backgroundColor = CardPink.copy(alpha = 0.9f),
+            elevation = 8.dp,
+            shape = MaterialTheme.shapes.medium,
+            modifier = modifier
+                .wrapContentSize()
+                .padding(start = 16.dp, top = 16.dp)
         ) {
-            // Undo
-            Button(
-                onClick = onUndo,
-                enabled = canUndo,
-                modifier = Modifier.size(40.dp),
-                contentPadding = PaddingValues(0.dp),
-                colors = ButtonDefaults.buttonColors(
-                    backgroundColor = if (canUndo) ButtonColor else DisabledPink,
-                    disabledBackgroundColor = DisabledPink,
-                    contentColor = Color.White,
-                    disabledContentColor = Color.White.copy(alpha = 0.5f)
-                ),
-                shape = MaterialTheme.shapes.small,
-                elevation = ButtonDefaults.elevation(defaultElevation = 4.dp, pressedElevation = 8.dp, disabledElevation = 0.dp)
+            Row(
+                modifier = Modifier.padding(8.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Icon(Icons.Default.ArrowBack, contentDescription = "Назад", modifier = Modifier.size(24.dp))
-            }
-
-            // Redo
-            Button(
-                onClick = onRedo,
-                enabled = canRedo,
-                modifier = Modifier.size(40.dp),
-                contentPadding = PaddingValues(0.dp),
-                colors = ButtonDefaults.buttonColors(
-                    backgroundColor = if (canRedo) ButtonColor else DisabledPink,
-                    disabledBackgroundColor = DisabledPink,
-                    contentColor = Color.White,
-                    disabledContentColor = Color.White.copy(alpha = 0.5f)
-                ),
-                shape = MaterialTheme.shapes.small,
-                elevation = ButtonDefaults.elevation(defaultElevation = 4.dp, pressedElevation = 8.dp, disabledElevation = 0.dp)
-            ) {
-                Icon(Icons.Default.ArrowForward, contentDescription = "Вперёд", modifier = Modifier.size(24.dp))
-            }
-
-            Box(modifier = Modifier.width(1.dp).height(30.dp).background(SoftPink.copy(alpha = 0.5f)))
-
-            // Reset zoom
-            Button(
-                onClick = onResetZoom,
-                modifier = Modifier.size(40.dp),
-                contentPadding = PaddingValues(0.dp),
-                colors = ButtonDefaults.buttonColors(backgroundColor = ButtonColor, contentColor = Color.White),
-                shape = MaterialTheme.shapes.small,
-                elevation = ButtonDefaults.elevation(defaultElevation = 4.dp, pressedElevation = 8.dp)
-            ) {
-                Text("\uD83D\uDDD1\uFE0F", fontSize = 18.sp)
-            }
-
-            Column(
-                modifier = Modifier.padding(start = 8.dp),
-                verticalArrangement = Arrangement.spacedBy(4.dp)
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                    Box(modifier = Modifier.size(12.dp).background(MediumPink, CircleShape)) {
-                        Box(modifier = Modifier.fillMaxSize().padding(3.dp).background(Color.White, CircleShape))
-                    }
-                    Text("Увеличение: $zoomText", color = TextDark, fontSize = 12.sp, fontWeight = FontWeight.Medium)
+                // Undo
+                Button(
+                    onClick = onUndo,
+                    enabled = canUndo,
+                    modifier = Modifier.size(40.dp),
+                    contentPadding = PaddingValues(0.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        backgroundColor = if (canUndo) ButtonColor else DisabledPink,
+                        disabledBackgroundColor = DisabledPink,
+                        contentColor = Color.White,
+                        disabledContentColor = Color.White.copy(alpha = 0.5f)
+                    ),
+                    shape = MaterialTheme.shapes.small,
+                    elevation = ButtonDefaults.elevation(
+                        defaultElevation = 4.dp,
+                        pressedElevation = 8.dp,
+                        disabledElevation = 0.dp
+                    )
+                ) {
+                    Icon(Icons.Default.ArrowBack, contentDescription = "Назад", modifier = Modifier.size(24.dp))
                 }
-                Text("Итерации: $maxIterations", color = TextDark, fontSize = 12.sp, fontWeight = FontWeight.Medium)
-                Text("История: $historyInfo", color = TextDark.copy(alpha = 0.7f), fontSize = 11.sp)
+
+                // Redo
+                Button(
+                    onClick = onRedo,
+                    enabled = canRedo,
+                    modifier = Modifier.size(40.dp),
+                    contentPadding = PaddingValues(0.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        backgroundColor = if (canRedo) ButtonColor else DisabledPink,
+                        disabledBackgroundColor = DisabledPink,
+                        contentColor = Color.White,
+                        disabledContentColor = Color.White.copy(alpha = 0.5f)
+                    ),
+                    shape = MaterialTheme.shapes.small,
+                    elevation = ButtonDefaults.elevation(
+                        defaultElevation = 4.dp,
+                        pressedElevation = 8.dp,
+                        disabledElevation = 0.dp
+                    )
+                ) {
+                    Icon(Icons.Default.ArrowForward, contentDescription = "Вперёд", modifier = Modifier.size(24.dp))
+                }
+
+                Box(modifier = Modifier.width(1.dp).height(30.dp).background(SoftPink.copy(alpha = 0.5f)))
+
+                // Reset zoom
+                Button(
+                    onClick = onResetZoom,
+                    modifier = Modifier.size(40.dp),
+                    contentPadding = PaddingValues(0.dp),
+                    colors = ButtonDefaults.buttonColors(backgroundColor = ButtonColor, contentColor = Color.White),
+                    shape = MaterialTheme.shapes.small,
+                    elevation = ButtonDefaults.elevation(defaultElevation = 4.dp, pressedElevation = 8.dp)
+                ) {
+                    Text("\uD83D\uDDD1\uFE0F", fontSize = 18.sp)
+                }
+
+                Column(
+                    modifier = Modifier.padding(start = 8.dp),
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Box(modifier = Modifier.size(12.dp).background(MediumPink, CircleShape)) {
+                            Box(modifier = Modifier.fillMaxSize().padding(3.dp).background(Color.White, CircleShape))
+                        }
+                        Text(
+                            "Увеличение: $zoomText",
+                            color = TextDark,
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
+                    Text("Итерации: $maxIterations", color = TextDark, fontSize = 12.sp, fontWeight = FontWeight.Medium)
+                    Text("История: $historyInfo", color = TextDark.copy(alpha = 0.7f), fontSize = 11.sp)
+                }
+
             }
         }
     }
@@ -300,138 +330,184 @@ fun FractalControlPanel(
     viewModel: MainViewModel,
     modifier: Modifier = Modifier
 ) {
-    Card(
-        backgroundColor = CardPink.copy(alpha = 0.9f),
-        elevation = 8.dp,
-        shape = MaterialTheme.shapes.medium,
-        modifier = modifier
-    ) {
-        Column(
-            modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+    if (!viewModel.isInterfaceHidden) {
+        Card(
+            backgroundColor = CardPink.copy(alpha = 0.9f),
+            elevation = 8.dp,
+            shape = MaterialTheme.shapes.medium,
+            modifier = modifier
         ) {
-            // Фракталы
-            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                Text("Фракталы:", color = TextDark, fontWeight = FontWeight.Medium, fontSize = 15.sp)
-                FractalButton("Мандельброт", enabled = !(viewModel.isRecordingTour || viewModel.isTourRunning)) { viewModel.setMandelbrot() }
-                FractalButton("Жюлиа", enabled = !(viewModel.isRecordingTour || viewModel.isTourRunning)) { viewModel.setJulia() }
-                FractalButton("Трикорн", enabled = !(viewModel.isRecordingTour || viewModel.isTourRunning)) { viewModel.setTricorn() }
-                Button(
-                    onClick = { /* TODO */ },
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = ButtonDefaults.buttonColors(backgroundColor = ButtonColor, contentColor = Color.White),
-                    shape = MaterialTheme.shapes.small,
-                    elevation = ButtonDefaults.elevation(4.dp, 8.dp),
-                    enabled = !(viewModel.isRecordingTour || viewModel.isTourRunning)
-                ) {
-                    Text("Загрузить фрактал", fontSize = 13.sp, fontWeight = FontWeight.Medium)
-                }
-            }
-
-            Divider(color = SoftPink, thickness = 1.dp)
-
-            // Цветовые схемы
-            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                Text("Цветовые схемы:", color = TextDark, fontWeight = FontWeight.Medium, fontSize = 15.sp)
-                ColorSchemeButton("Стандартная") { viewModel.setStandardColors() }
-                ColorSchemeButton("Огненная") { viewModel.setFireColors() }
-                ColorSchemeButton("Радужная") { viewModel.setRainbowColors() }
-                ColorSchemeButton("Ледяная") { viewModel.setIceColors() }
-            }
-
-            Divider(color = SoftPink, thickness = 1.dp)
-
-            // Сохранение
-            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                Text("Сохранить как:", color = TextDark, fontWeight = FontWeight.Medium, fontSize = 15.sp)
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Button(onClick = { }, modifier = Modifier.weight(1f).height(40.dp),
-                        colors = ButtonDefaults.buttonColors(backgroundColor = ButtonColor, contentColor = Color.White)) {
-                        Text("Fractal", fontSize = 13.sp, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
-                    }
-                    Button(
-                        onClick = { viewModel.saveAsJpg() },
-                        modifier = Modifier.weight(1f).height(40.dp),
-                        colors = ButtonDefaults.buttonColors(backgroundColor = ButtonColor, contentColor = Color.White)
-                    ) {
-                        Text("JPG", fontSize = 13.sp, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
-                    }
-                }
-            }
-
-            Divider(color = SoftPink, thickness = 1.dp)
-
-            // Остальные кнопки
-            Button(
-                onClick = { viewModel.randomJump() },
-                modifier = Modifier.fillMaxWidth(),
-                colors = ButtonDefaults.buttonColors(backgroundColor = ButtonColor, contentColor = Color.White)
+            Column(
+                modifier = Modifier.padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                Text("Случайный прыжок", fontSize = 14.sp, fontWeight = FontWeight.Medium, textAlign = TextAlign.Center)
-            }
-
-            Divider(color = SoftPink, thickness = 1.dp)
-
-// Inside FractalControlPanel Composable
-            // ——— ЭКСКУРСИЯ ———
-            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                Text("Экскурсия:", color = TextDark, fontWeight = FontWeight.Medium, fontSize = 15.sp)
-
-                if (viewModel.isRecordingTour) {
-                    Text("Запись...", color = MediumPink, fontWeight = FontWeight.Bold)
+                // Фракталы
+                Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                    Text("Фракталы:", color = TextDark, fontWeight = FontWeight.Medium, fontSize = 15.sp)
+                    FractalButton(
+                        "Мандельброт",
+                        enabled = !(viewModel.isRecordingTour || viewModel.isTourRunning)
+                    ) { viewModel.setMandelbrot() }
+                    FractalButton(
+                        "Жюлиа",
+                        enabled = !(viewModel.isRecordingTour || viewModel.isTourRunning)
+                    ) { viewModel.setJulia() }
+                    FractalButton(
+                        "Трикорн",
+                        enabled = !(viewModel.isRecordingTour || viewModel.isTourRunning)
+                    ) { viewModel.setTricorn() }
                     Button(
-                        onClick = { viewModel.addTourFrame() },
+                        onClick = { /* TODO */ },
                         modifier = Modifier.fillMaxWidth(),
-                        colors = ButtonDefaults.buttonColors(backgroundColor = MediumPink, contentColor = Color.White)
+                        colors = ButtonDefaults.buttonColors(backgroundColor = ButtonColor, contentColor = Color.White),
+                        shape = MaterialTheme.shapes.small,
+                        elevation = ButtonDefaults.elevation(4.dp, 8.dp),
+                        enabled = !(viewModel.isRecordingTour || viewModel.isTourRunning)
                     ) {
-                        Text("+ Кадр", fontSize = 13.sp, fontWeight = FontWeight.Medium)
+                        Text(
+                            "Загрузить фрактал",
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.Medium,
+                            textAlign = TextAlign.Center
+                        )
                     }
+                }
 
+                Divider(color = SoftPink, thickness = 1.dp)
+
+                // Цветовые схемы
+                Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                    Text("Цветовые схемы:", color = TextDark, fontWeight = FontWeight.Medium, fontSize = 15.sp)
+                    ColorSchemeButton("Стандартная") { viewModel.setStandardColors() }
+                    ColorSchemeButton("Огненная") { viewModel.setFireColors() }
+                    ColorSchemeButton("Радужная") { viewModel.setRainbowColors() }
+                    ColorSchemeButton("Ледяная") { viewModel.setIceColors() }
+                }
+
+                Divider(color = SoftPink, thickness = 1.dp)
+
+                Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                    Text("Сохранить как:", color = TextDark, fontWeight = FontWeight.Medium, fontSize = 15.sp)
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         Button(
-                            onClick = { viewModel.stopTourRecording() },
-                            modifier = Modifier.weight(1f),
-                            colors = ButtonDefaults.buttonColors(backgroundColor = DisabledPink, contentColor = Color.White)
-                        ) {
-                            Text("⏸ Прекратить", fontSize = 12.sp)
-                        }
-                        Button(
-                            enabled = viewModel.currentTourFrames.size >= 2,
-                            onClick = { viewModel.saveAndStartTour() },
-                            modifier = Modifier.weight(1f),
+                            onClick = { }, modifier = Modifier.weight(1f).height(40.dp),
                             colors = ButtonDefaults.buttonColors(
-                                backgroundColor = if (viewModel.currentTourFrames.size >= 2) ButtonColor else DisabledPink,
-                                contentColor = Color.White
-                            )
-                        ) {
-                            Text("▶ Начать", fontSize = 12.sp)
-                        }
-                    }
-                } else {
-                    Button(
-                        onClick = { viewModel.startTourRecording() },
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = ButtonDefaults.buttonColors(backgroundColor = ButtonColor, contentColor = Color.White)
-                    ) {
-                        Text("⏺ Начать запись", fontSize = 13.sp, fontWeight = FontWeight.Medium)
-                    }
-
-                    if (viewModel.currentTour != null) {
-                        Button(
-                            onClick = {
-                                if (viewModel.isTourRunning) viewModel.stopTour()
-                                else viewModel.startTour(viewModel.currentTour!!)
-                            },
-                            modifier = Modifier.fillMaxWidth(),
-                            colors = ButtonDefaults.buttonColors(
-                                backgroundColor = if (viewModel.isTourRunning) Color.Gray else ButtonColor,
+                                backgroundColor = ButtonColor,
                                 contentColor = Color.White
                             )
                         ) {
                             Text(
-                                if (viewModel.isTourRunning) "⏹ Остановить" else "▶ Продолжить",
-                                fontSize = 13.sp
+                                "Fractal",
+                                fontSize = 13.sp,
+                                textAlign = TextAlign.Center,
+                                modifier = Modifier.fillMaxWidth()
                             )
+                        }
+                        Button(
+                            onClick = { viewModel.saveAsJpg() },
+                            modifier = Modifier.weight(1f).height(40.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                backgroundColor = ButtonColor,
+                                contentColor = Color.White
+                            )
+                        ) {
+                            Text(
+                                "JPG",
+                                fontSize = 13.sp,
+                                textAlign = TextAlign.Center,
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                        }
+                    }
+                }
+
+                Divider(color = SoftPink, thickness = 1.dp)
+
+                // Остальные кнопки
+                Button(
+                    onClick = { viewModel.randomJump() },
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = ButtonDefaults.buttonColors(backgroundColor = ButtonColor, contentColor = Color.White)
+                ) {
+                    Text(
+                        "Случайный прыжок",
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Medium,
+                        textAlign = TextAlign.Center
+                    )
+                }
+
+                Divider(color = SoftPink, thickness = 1.dp)
+
+                // ——— ЭКСКУРСИЯ ———
+                Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                    Text("Экскурсия:", color = TextDark, fontWeight = FontWeight.Medium, fontSize = 15.sp)
+
+                    if (viewModel.isRecordingTour) {
+                        Text("Запись...", color = MediumPink, fontWeight = FontWeight.Bold)
+                        Button(
+                            onClick = { viewModel.addTourFrame() },
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = ButtonDefaults.buttonColors(
+                                backgroundColor = MediumPink,
+                                contentColor = Color.White
+                            )
+                        ) {
+                            Text("+ Кадр", fontSize = 13.sp, fontWeight = FontWeight.Medium)
+                        }
+
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            Button(
+                                onClick = { viewModel.stopTourRecording() },
+                                modifier = Modifier.weight(1f),
+                                colors = ButtonDefaults.buttonColors(
+                                    backgroundColor = DisabledPink,
+                                    contentColor = Color.White
+                                )
+                            ) {
+                                Text("⏸ Прекратить", fontSize = 12.sp)
+                            }
+                            Button(
+                                enabled = viewModel.currentTourFrames.size >= 2,
+                                onClick = { viewModel.saveAndStartTour() },
+                                modifier = Modifier.weight(1f),
+                                colors = ButtonDefaults.buttonColors(
+                                    backgroundColor = if (viewModel.currentTourFrames.size >= 2) ButtonColor else DisabledPink,
+                                    contentColor = Color.White
+                                )
+                            ) {
+                                Text("▶ Начать", fontSize = 12.sp)
+                            }
+                        }
+                    } else {
+                        Button(
+                            onClick = { viewModel.startTourRecording() },
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = ButtonDefaults.buttonColors(
+                                backgroundColor = ButtonColor,
+                                contentColor = Color.White
+                            )
+                        ) {
+                            Text("⏺ Начать запись", fontSize = 13.sp, fontWeight = FontWeight.Medium)
+                        }
+
+                        if (viewModel.currentTour != null) {
+                            Button(
+                                onClick = {
+                                    if (viewModel.isTourRunning) viewModel.stopTour()
+                                    else viewModel.startTour(viewModel.currentTour!!)
+                                },
+                                modifier = Modifier.fillMaxWidth(),
+                                colors = ButtonDefaults.buttonColors(
+                                    backgroundColor = if (viewModel.isTourRunning) Color.Gray else ButtonColor,
+                                    contentColor = Color.White
+                                )
+                            ) {
+                                Text(
+                                    if (viewModel.isTourRunning) "⏹ Остановить" else "▶ Продолжить",
+                                    fontSize = 13.sp
+                                )
+                            }
                         }
                     }
                 }

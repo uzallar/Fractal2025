@@ -24,6 +24,7 @@ dependencies {
     implementation(compose.desktop.currentOs)
     implementation("androidx.lifecycle:lifecycle-viewmodel-desktop:2.9.4")
     implementation(compose.material3)
+    implementation("com.madgag:animated-gif-lib:1.4")
 
 
 
@@ -40,9 +41,6 @@ dependencies {
     testImplementation(kotlin("test-junit5"))
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-swing:1.8.0")
 
-
-
-
 }
 
 
@@ -54,7 +52,22 @@ compose.desktop {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = "Fractal2025"
             packageVersion = "1.0.0"
+
+            macOS {
+                iconFile.set(project.file("src/main/resources/icon.icns")) // или путь к вашему .icns
+                // bundleID = "com.example.fractals" // желательно указать
+            }
+
+            windows {
+                iconFile.set(project.file("src/main/resources/icon.ico"))
+            }
+
+            linux {
+                iconFile.set(project.file("src/main/resources/icon.png"))
+            }
         }
+
+
     }
 }
 tasks.withType<Test> {
