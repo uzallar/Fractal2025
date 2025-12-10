@@ -106,28 +106,9 @@ class MainViewModel {
         isTourRunning = true
         tourJob = viewModelScope.launch {
             try {
-                val frames = tour.frames
-                if (frames.isEmpty()) return@launch
-
                 while (true) {
-                    for (i in 0 until frames.size) {
-                        val frameStart = frames[i]
-                        val frameEnd = frames[(i + 1) % frames.size]
-
-                        // Save state *before* animating (so user can undo tour start)
-                        if (i == 0) saveCurrentState()
-
-                        animateBetween(frameStart.plain, frameEnd.plain, frameStart.durationMs)
-
-                        // Switch fractal/color mid-tour?
-                        if (frameEnd.fractalName != currentFractalName) {
-                            setFractalByName(frameEnd.fractalName)
-                        }
-                        if (frameEnd.colorSchemeName != currentColorSchemeName) {
-                            setColorSchemeByName(frameEnd.colorSchemeName)
-                        }
-
-                        // Early exit if tour stopped
+                    for (i in 0 until tour.frames.size - 1) {
+                        animateBetween(tour.frames[i], tour.frames[i + 1])
                         if (!isTourRunning) break
                     }
                     if (!tour.loop) break
@@ -157,6 +138,41 @@ class MainViewModel {
         isRecordingTour = false
         startTour(currentTour!!)
     }
+
+    fun addTourFrame() {
+        val frame = TourFrame(
+            plain = Plain(
+                xMin = plain.xMin,
+                xMax = plain.xMax,
+                yMin = plain.yMin,
+                yMax = plain.yMax,
+                width = plain.width,
+                height = plain.height
+            ),
+            fractalName = currentFractalName,
+            colorSchemeName = currentColorSchemeName,
+            durationMs = 3000
+        )
+        currentTourFrames += frame
+    }
+
+    private data class FractalView(
+        val centerX: Double,
+        val centerY: Double,
+        val scale: Double
+    ) {
+        companion object {
+            fun fromPlain(plain: Plain): FractalView {
+                val cx = (plain.xMin + plain.xMax) / 2.0
+                val cy = (plain.yMin + plain.yMax) / 2.0
+                val width = plain.xMax - plain.xMin
+                val scale = 3.0 / width  // 3.0 = initial width (-2 → +1)
+                return FractalView(cx, cy, scale)
+            }
+
+        }
+    }
+
 
     private fun setFractalByName(name: String) {
         when (name) {
@@ -191,54 +207,63 @@ class MainViewModel {
     }
 
     private suspend fun animateBetween(
-        startPlain: Plain,
-        endPlain: Plain,
-        durationMs: Long
+        start: TourFrame,
+        end: TourFrame
     ) {
-        val t0 = startPlain
-        val t1 = endPlain
+        if (currentFractalName != start.fractalName) {
+            setFractalByName(start.fractalName)
+        }
+        if (currentColorSchemeName != start.colorSchemeName) {
+            setColorSchemeByName(start.colorSchemeName)
+        }
 
-        val cx0 = (t0.xMin + t0.xMax) / 2
-        val cy0 = (t0.yMin + t0.yMax) / 2
-        val s0 = 3.0 / (t0.xMax - t0.xMin)
+        val startPlain = start.plain
+        val endPlain = end.plain
 
-        val cx1 = (t1.xMin + t1.xMax) / 2
-        val cy1 = (t1.yMin + t1.yMax) / 2
-        val s1 = 3.0 / (t1.xMax - t1.xMin)
+        val screenCenter = Offset(startPlain.width / 2f, startPlain.height / 2f)
 
-        val logS0 = ln(s0)
-        val logS1 = ln(s1)
+        val startWorldX = Converter.xScr2Crt(screenCenter.x, startPlain)
+        val startWorldY = Converter.yScr2Crt(screenCenter.y, startPlain)
+        val endWorldX = Converter.xScr2Crt(screenCenter.x, endPlain)
+        val endWorldY = Converter.yScr2Crt(screenCenter.y, endPlain)
 
-        val steps = (durationMs / 16).coerceAtLeast(2) // ~60 FPS
-        val dt = 1.0 / steps
+        val startView = FractalView.fromPlain(startPlain)
+        val endView = FractalView.fromPlain(endPlain)
 
-        for (i in 0..steps.toInt()) {
+        val invS0 = 1.0 / startView.scale
+        val invS1 = 1.0 / endView.scale
+
+        val duration = start.durationMs.coerceAtLeast(500)
+        val steps = (duration / 16).coerceIn(2, 200).toInt()
+
+        for (i in 0..steps) {
             if (!isTourRunning) break
+            val t = i.toDouble() / steps
 
-            val alpha = (i * dt).coerceIn(0.0, 1.0)
-            val cx = lerp(cx0, cx1, alpha)
-            val cy = lerp(cy0, cy1, alpha)
-            val s = exp(lerp(logS0, logS1, alpha))
+            val invS = lerp(invS0, invS1, t)
+            val scale = 1.0 / invS
 
-            // Adjust for *current* screen aspect
+            val interpWorldX = lerp(startWorldX, endWorldX, t)
+            val interpWorldY = lerp(startWorldY, endWorldY, t)
+
             val aspect = plain.width / plain.height
-            val width = 3.0 / s
-            val height = width / aspect
+            val visibleWidth = 3.0 / scale
+            val visibleHeight = visibleWidth / aspect
 
-            plain.xMin = cx - width / 2
-            plain.xMax = cx + width / 2
-            plain.yMin = cy - height / 2
-            plain.yMax = cy + height / 2
+            plain.xMin = interpWorldX - visibleWidth / 2
+            plain.xMax = interpWorldX + visibleWidth / 2
+            plain.yMin = interpWorldY - visibleHeight / 2
+            plain.yMax = interpWorldY + visibleHeight / 2
 
             updateZoomLevel()
             mustRepaint = true
-
-            // Redraw next frame
-            delay(16) // ~60 FPS
+            delay(16)
         }
+
+        if (end.fractalName != currentFractalName) setFractalByName(end.fractalName)
+        if (end.colorSchemeName != currentColorSchemeName) setColorSchemeByName(end.colorSchemeName)
     }
 
-    // Helper
     private fun lerp(a: Double, b: Double, t: Double) = a + (b - a) * t
 
     init {

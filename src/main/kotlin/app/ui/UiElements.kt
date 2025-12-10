@@ -373,30 +373,14 @@ fun FractalControlPanel(
             Divider(color = SoftPink, thickness = 1.dp)
 
 // Inside FractalControlPanel Composable
+            // ——— ЭКСКУРСИЯ ———
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 Text("Экскурсия:", color = TextDark, fontWeight = FontWeight.Medium, fontSize = 15.sp)
 
                 if (viewModel.isRecordingTour) {
                     Text("Запись...", color = MediumPink, fontWeight = FontWeight.Bold)
-
-                    // Кнопка "Добавить кадр" — по желанию
                     Button(
-                        onClick = {
-                            val frame = TourFrame(
-                                plain = Plain(
-                                    xMin = viewModel.currentPlain.xMin,
-                                    xMax = viewModel.currentPlain.xMax,
-                                    yMin = viewModel.currentPlain.yMin,
-                                    yMax = viewModel.currentPlain.yMax,
-                                    width = 1f,
-                                    height = 1f
-                                ),
-                                fractalName = viewModel.currentFractalName,
-                                colorSchemeName = viewModel.currentColorSchemeName,
-                                durationMs = 3000
-                            )
-                            viewModel.currentTourFrames += frame
-                        },
+                        onClick = { viewModel.addTourFrame() },
                         modifier = Modifier.fillMaxWidth(),
                         colors = ButtonDefaults.buttonColors(backgroundColor = MediumPink, contentColor = Color.White)
                     ) {
@@ -404,16 +388,13 @@ fun FractalControlPanel(
                     }
 
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        // Кнопка "Прекратить запись" — работает сразу!
                         Button(
                             onClick = { viewModel.stopTourRecording() },
                             modifier = Modifier.weight(1f),
                             colors = ButtonDefaults.buttonColors(backgroundColor = DisabledPink, contentColor = Color.White)
                         ) {
-                            Text("⏸ Прекратить", fontSize = 13.sp)
+                            Text("⏸ Прекратить", fontSize = 12.sp)
                         }
-
-                        // Кнопка "Начать тур" — активна только если есть хотя бы 2 кадра
                         Button(
                             enabled = viewModel.currentTourFrames.size >= 2,
                             onClick = { viewModel.saveAndStartTour() },
@@ -423,7 +404,7 @@ fun FractalControlPanel(
                                 contentColor = Color.White
                             )
                         ) {
-                            Text("▶ Начать", fontSize = 13.sp)
+                            Text("▶ Начать", fontSize = 12.sp)
                         }
                     }
                 } else {
