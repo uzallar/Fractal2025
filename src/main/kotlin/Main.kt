@@ -71,6 +71,23 @@ fun main() = application {
         },
         title = "Фракталы"
     ) {
+        val normalCursor = PointerIcon(
+            Toolkit.getDefaultToolkit().createCustomCursor(
+                ImageIO.read(
+                    Thread.currentThread().contextClassLoader.getResourceAsStream("normal.jpg")),
+                Point(0, 0),
+                "normalCursor"
+            )
+        )
+        val holdCursor = PointerIcon(
+            Toolkit.getDefaultToolkit().createCustomCursor(
+                ImageIO.read(
+                    Thread.currentThread().contextClassLoader.getResourceAsStream("hold.jpg")),
+                Point(0, 0),
+                "holdCursor"
+            )
+        )
+        var isHolding by remember { mutableStateOf(false) }
         MaterialTheme(
             colors = MaterialTheme.colors.copy(
                 primary = MediumPink,
@@ -109,6 +126,14 @@ fun main() = application {
                             else -> false
                         }
                     }
+                    .pointerHoverIcon(if (isHolding) holdCursor else normalCursor)
+                    .pointerInput(Unit) {
+                        awaitPointerEventScope {
+                            while (true) {
+                                isHolding = awaitPointerEvent().buttons.isPrimaryPressed
+                            }
+                        }
+                    }
             ) {
                 Scaffold(
                     topBar = {
@@ -117,7 +142,9 @@ fun main() = application {
                             onShowHistory = {
                                 viewModel.refreshDetailedHistory()
                                 showHistoryDialog = true
-                            }
+                            },
+                            onToggleInterface = { viewModel.toggleInterface() },
+                            isInterfaceHidden = viewModel.isInterfaceHidden
                         )
                     },
                     bottomBar = {
@@ -188,25 +215,7 @@ fun main() = application {
 @Composable
 fun FractalCanvas(viewModel: MainViewModel) {
     val textMeasurer = rememberTextMeasurer()
-    val normalCursor = PointerIcon(
-        Toolkit.getDefaultToolkit().createCustomCursor(
-            ImageIO.read(
-                Thread.currentThread().contextClassLoader.getResourceAsStream("normal.jpg")),
-            Point(0, 0),
-            "normalCursor"
-        )
-    )
-    val holdCursor = PointerIcon(
-        Toolkit.getDefaultToolkit().createCustomCursor(
-            ImageIO.read(
-                Thread.currentThread().contextClassLoader.getResourceAsStream("hold.jpg")),
-            Point(0, 0),
-            "holdCursor"
-        )
-    )
-    var isHolding by remember { mutableStateOf(false) }
     Box(modifier = Modifier.fillMaxSize()) {
-        // ← ВАЖНО: обработчик мыши на Box, а НЕ на Canvas!
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -218,14 +227,6 @@ fun FractalCanvas(viewModel: MainViewModel) {
                     onLeftSelectionUpdate = { viewModel.onSelecting(it) },
                     onLeftSelectionEnd = { viewModel.onStopSelecting() }
                 )
-                .pointerHoverIcon(if (isHolding) holdCursor else normalCursor)
-                .pointerInput(Unit) {
-                    awaitPointerEventScope {
-                        while (true) {
-                            isHolding = awaitPointerEvent().buttons.isPrimaryPressed
-                        }
-                    }
-                }
         ) {
 
             Canvas(
@@ -258,6 +259,7 @@ fun FractalCanvas(viewModel: MainViewModel) {
         }
 
         FractalInfoPanel(
+            viewModel = viewModel,
             canUndo = viewModel.canUndo,
             canRedo = viewModel.canRedo,
             zoomText = viewModel.zoomText,

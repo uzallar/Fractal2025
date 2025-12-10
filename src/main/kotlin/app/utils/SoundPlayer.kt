@@ -10,8 +10,10 @@ object SoundPlayer {
     private var lastPanTime = 0L
     private const val MIN_DELAY_ZOOM_MS = 80L
     private const val MIN_DELAY_PAN_MS = 2600L  // разная задержка для разных звуков
+    var isEnabled = true
 
     private fun playSound(soundName: String, lastPlayTime: Long, minDelay: Long): Long {
+        if (!isEnabled) return lastPlayTime
         val now = System.currentTimeMillis()
         if (now - lastPlayTime < minDelay) return lastPlayTime
 
@@ -35,7 +37,6 @@ object SoundPlayer {
                     }
                 }
             } catch (e: Exception) {
-                // Звук не сработал — молчим
             }
         }.start()
 

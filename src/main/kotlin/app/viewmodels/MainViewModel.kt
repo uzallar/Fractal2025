@@ -19,6 +19,7 @@ import app.history.UndoManager
 import app.tour.FractalTour
 import app.tour.TourFrame
 import app.utils.ExporterJPG
+import app.utils.MusicPlayer
 import app.utils.FractalSaving
 import app.utils.SoundPlayer
 import kotlinx.coroutines.CoroutineScope
@@ -50,6 +51,12 @@ class MainViewModel {
     var contextMenuCoordinates by mutableStateOf("")
 
     private var iterationsOffset by mutableStateOf(0)
+
+    var isInterfaceHidden by mutableStateOf(false)
+
+    fun toggleInterface() {
+        isInterfaceHidden = !isInterfaceHidden
+    }
 
     private val initialXMin = -2.0
     private val initialXMax = 1.0
@@ -104,10 +111,15 @@ class MainViewModel {
     var tourName by mutableStateOf("Моя экскурсия")
 
 
+
     fun startTour(tour: FractalTour) {
         if (isTourRunning) return
         isTourRunning = true
+        isInterfaceHidden = true
         tourJob = viewModelScope.launch {
+            val wasSoundEnabled = SoundPlayer.isEnabled
+            SoundPlayer.isEnabled = false
+            MusicPlayer.play("interstellar_theme.wav")
             try {
                 while (true) {
                     for (i in 0 until tour.frames.size - 1) {
@@ -117,6 +129,10 @@ class MainViewModel {
                     if (!tour.loop) break
                 }
             } finally {
+                isTourRunning = false
+                isInterfaceHidden = false
+                SoundPlayer.isEnabled = wasSoundEnabled
+                MusicPlayer.stop()
                 isTourRunning = false
             }
         }
