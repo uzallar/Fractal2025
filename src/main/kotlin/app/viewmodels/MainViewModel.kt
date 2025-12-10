@@ -47,6 +47,7 @@ class MainViewModel {
 
     private var iterationsOffset by mutableStateOf(0)
 
+
     private val initialXMin = -2.0
     private val initialXMax = 1.0
     private val initialYMin = -1.0
@@ -275,7 +276,7 @@ class MainViewModel {
             plain = plain,
             fractalName = currentFractalName,
             colorSchemeName = currentColorSchemeName,
-            iterationsOffset = iterationsOffset
+            iterationsOffset = iterationsOffset,
         )
         updateHistoryInfo()
     }
@@ -297,7 +298,6 @@ class MainViewModel {
         state?.let { restoreState(it) }
         updateHistoryInfo()
     }
-
     private fun restoreState(state: app.history.FractalState) {
         plain.xMin = state.plain.xMin
         plain.xMax = state.plain.xMax
@@ -310,9 +310,20 @@ class MainViewModel {
         currentFractalName = state.fractalName
         currentColorSchemeName = state.colorSchemeName
 
+
         updateFractalPainterWithState(state)
-        updateZoomLevel()
+        updateZoomTextFromLevel()
         mustRepaint = true
+    }
+    private fun updateZoomTextFromLevel() {
+        zoomText = when {
+            zoomLevel >= 1_000_000 -> String.format("%.1fMx", zoomLevel / 1_000_000)
+            zoomLevel >= 1_000 -> String.format("%.1fKx", zoomLevel / 1_000)
+            zoomLevel >= 100 -> String.format("%.0fx", zoomLevel)
+            zoomLevel >= 10 -> String.format("%.1fx", zoomLevel)
+            zoomLevel >= 1 -> String.format("%.2fx", zoomLevel)
+            else -> String.format("%.4fx", zoomLevel)
+        }
     }
 
     private fun updateFractalPainterWithState(state: app.history.FractalState) {
@@ -491,7 +502,6 @@ class MainViewModel {
 
     fun setMandelbrot() {
         resetPanFlag()
-        resetPanFlag()
         saveCurrentState()
         fractalPainter = fractalPainter.withFractal(FractalFunctions.mandelbrot)
         currentFractalName = "Мандельброт"
@@ -499,7 +509,6 @@ class MainViewModel {
     }
 
     fun setJulia() {
-        resetPanFlag()
         resetPanFlag()
         saveCurrentState()
         fractalPainter = fractalPainter.withFractal(FractalFunctions.julia)
@@ -509,7 +518,6 @@ class MainViewModel {
 
     fun setTricorn() {
         resetPanFlag()
-        resetPanFlag()
         saveCurrentState()
         fractalPainter = fractalPainter.withFractal(FractalFunctions.tricorn)
         currentFractalName = "Трикорн"
@@ -517,7 +525,6 @@ class MainViewModel {
     }
 
     fun setStandardColors() {
-        resetPanFlag()
         resetPanFlag()
         saveCurrentState()
         fractalPainter = fractalPainter.withColorScheme(ColorSchemes.standard)
@@ -527,7 +534,6 @@ class MainViewModel {
 
     fun setFireColors() {
         resetPanFlag()
-        resetPanFlag()
         saveCurrentState()
         fractalPainter = fractalPainter.withColorScheme(ColorSchemes.fire)
         currentColorSchemeName = "Огненная"
@@ -535,7 +541,6 @@ class MainViewModel {
     }
 
     fun setRainbowColors() {
-        resetPanFlag()
         resetPanFlag()
         saveCurrentState()
         fractalPainter = fractalPainter.withColorScheme(ColorSchemes.rainbow)
@@ -545,7 +550,6 @@ class MainViewModel {
 
     fun setIceColors() {
         resetPanFlag()
-        resetPanFlag()
         saveCurrentState()
         fractalPainter = fractalPainter.withColorScheme(ColorSchemes.ice)
         currentColorSchemeName = "Ледяная"
@@ -553,7 +557,7 @@ class MainViewModel {
     }
 
     fun handlePan(delta: Offset) {
-        // Если еще не начали панорамировать - сохраняем состояние
+
         if (!isPanning) {
             saveCurrentState()
             isPanning = true
@@ -568,16 +572,26 @@ class MainViewModel {
         plain.yMin -= dy * yRange
         plain.yMax -= dy * yRange
 
-        // Воспроизводим звук сдвига
+
         SoundPlayer.pan()
 
         updateZoomLevel()
         mustRepaint = true
     }
 
-    // Добавляем метод для сброса (можно вызывать при любом другом действии)
+    fun finishPanning() {
+        if (isPanning) {
+            isPanning = false
+            saveCurrentState()
+            updateHistoryInfo()
+        }
+    }
     private fun resetPanFlag() {
-        isPanning = false
+        if (isPanning) {
+            finishPanning()
+        } else {
+            isPanning = false
+        }
     }
 
 

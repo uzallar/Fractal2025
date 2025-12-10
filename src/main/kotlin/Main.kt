@@ -64,42 +64,44 @@ fun main() = application {
         },
         title = "Фракталы"
     ) {
-        // Обработка горячих клавиш
-        LaunchedEffect(Unit) {
-        }
-
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .onPreviewKeyEvent { keyEvent ->
-                    when {
-                        // Ctrl+Z - отмена
-                        keyEvent.key == Key.Z && keyEvent.isCtrlPressed && keyEvent.type == KeyEventType.KeyDown -> {
-                            viewModel.undo()
-                            true
-                        }
-                        // Ctrl+Y
-                        (keyEvent.key == Key.Y && keyEvent.isCtrlPressed && keyEvent.type == KeyEventType.KeyDown) ||
-                                (keyEvent.key == Key.Z && keyEvent.isCtrlPressed && keyEvent.isShiftPressed && keyEvent.type == KeyEventType.KeyDown) -> {
-                            viewModel.redo()
-                            true
-                        }
-                        else -> false
-                    }
-                }
+        MaterialTheme(
+            colors = MaterialTheme.colors.copy(
+                primary = MediumPink,
+                primaryVariant = DarkPink,
+                secondary = LightPink,
+                background = BackgroundPink,
+                surface = CardPink,
+                onPrimary = Color.White,
+                onSecondary = Color.White,
+                onBackground = TextDark,
+                onSurface = TextDark
+            )
         ) {
-            MaterialTheme(
-                colors = MaterialTheme.colors.copy(
-                    primary = MediumPink,
-                    primaryVariant = DarkPink,
-                    secondary = LightPink,
-                    background = BackgroundPink,
-                    surface = CardPink,
-                    onPrimary = Color.White,
-                    onSecondary = Color.White,
-                    onBackground = TextDark,
-                    onSurface = TextDark
-                )
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .onPreviewKeyEvent { keyEvent ->
+                        when {
+                            keyEvent.key == Key.Z && keyEvent.isCtrlPressed && keyEvent.type == KeyEventType.KeyDown -> {
+                                println("Ctrl+Z pressed - calling undo")
+                                viewModel.undo()
+                                true
+                            }
+
+                            keyEvent.key == Key.Y && keyEvent.isCtrlPressed && keyEvent.type == KeyEventType.KeyDown -> {
+                                println("Ctrl+Y pressed - calling redo")
+                                viewModel.redo()
+                                true
+                            }
+
+                            keyEvent.key == Key.R && keyEvent.isCtrlPressed && keyEvent.type == KeyEventType.KeyDown -> {
+                                println("Ctrl+R pressed - resetting zoom")
+                                viewModel.resetZoom()
+                                true
+                            }
+                            else -> false
+                        }
+                    }
             ) {
                 Scaffold(
                     topBar = {
@@ -174,26 +176,24 @@ fun main() = application {
     }
 }
 
-
-
 @Composable
 fun FractalCanvas(viewModel: MainViewModel) {
     val textMeasurer = rememberTextMeasurer()
 
     Box(modifier = Modifier.fillMaxSize()) {
-        // ← ВАЖНО: обработчик мыши на Box, а НЕ на Canvas!
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .fractalMouseHandlers(
                     onRightPanDelta = { delta -> viewModel.handlePan(delta) },
+                    onRightPanEnd = { viewModel.finishPanning() },
                     onRightClick = { position -> viewModel.showContextMenuAt(position) },
                     onLeftSelectionStart = { viewModel.onStartSelecting(it) },
                     onLeftSelectionUpdate = { viewModel.onSelecting(it) },
                     onLeftSelectionEnd = { viewModel.onStopSelecting() }
                 )
         ) {
-            // Теперь Canvas внутри — он не будет перехватывать события
+
             Canvas(
                 modifier = Modifier
                     .fillMaxSize()

@@ -9,7 +9,9 @@ import kotlin.time.TimeSource
 
 fun Modifier.fractalMouseHandlers(
     onRightPanDelta: (Offset) -> Unit = {},
+    onRightPanEnd: () -> Unit = {}, // ← ДОБАВЛЯЕМ ЗДЕСЬ
     onRightClick: (Offset) -> Unit = {},
+
     onLeftSelectionStart: (Offset) -> Unit = {},
     onLeftSelectionUpdate: (Offset) -> Unit = {},
     onLeftSelectionEnd: () -> Unit = {}
@@ -21,6 +23,7 @@ fun Modifier.fractalMouseHandlers(
                 var rightPressTime = TimeSource.Monotonic.markNow()
                 var hasMovedDuringRightPress = false
                 var lastRightPos = Offset.Zero
+                var isRightPanning = false // ← ДОБАВЛЯЕМ ФЛАГ ПАНОРАМИРОВАНИЯ
 
                 while (true) {
                     val event = awaitPointerEvent()
@@ -34,6 +37,7 @@ fun Modifier.fractalMouseHandlers(
                                 rightPressTime = TimeSource.Monotonic.markNow()
                                 hasMovedDuringRightPress = false
                                 lastRightPos = change.position
+                                isRightPanning = false // Сбрасываем флаг
                                 change.consume()
                             } else if (event.buttons.isPrimaryPressed && !event.buttons.isSecondaryPressed) {
                                 // ЛКМ — только выделение
@@ -54,6 +58,7 @@ fun Modifier.fractalMouseHandlers(
                                     hasMovedDuringRightPress = true
                                     onRightPanDelta(Offset(delta.x, -delta.y))  // инверсия Y
                                     lastRightPos = change.position
+                                    isRightPanning = true // Устанавливаем флаг панорамирования
                                 }
                                 change.consume()
                             }
@@ -78,7 +83,13 @@ fun Modifier.fractalMouseHandlers(
 
                                 if (isQuickClick) {
                                     onRightClick(change.position)
+                                } else if (isRightPanning) {
+                                    // Если было панорамирование, вызываем завершение
+                                    onRightPanEnd()
                                 }
+
+                                // Сбрасываем флаг панорамирования
+                                isRightPanning = false
                                 change.consume()
                             }
                         }
