@@ -1,6 +1,7 @@
 package app.history
 
 import app.painting.convertation.Plain
+import kotlin.math.abs
 
 data class FractalState(
     val plain: Plain,
@@ -22,51 +23,72 @@ class UndoManager(private val maxSteps: Int = 100) {
         colorSchemeName: String,
         iterationsOffset: Int
     ) {
+        println("=== UNDO MANAGER: saveState called ===")
+        println("Fractal: '$fractalName' -> '${undoStack.lastOrNull()?.fractalName ?: "none"}'")
+        println("Color: '$colorSchemeName' -> '${undoStack.lastOrNull()?.colorSchemeName ?: "none"}'")
         val state = FractalState(
             plain = createCopy(plain),
             fractalName = fractalName,
             colorSchemeName = colorSchemeName,
             iterationsOffset = iterationsOffset
         )
+        if (undoStack.isNotEmpty()) {
+            val lastState = undoStack.last()
+            println("Last state in stack: ${lastState.fractalName} - ${lastState.colorSchemeName}")
+            if (undoStack.isNotEmpty()) {
+                val lastState = undoStack.last()
 
-        undoStack.add(state)
-        redoStack.clear()
 
-        if (undoStack.size > maxSteps + 1) {
-            undoStack.removeAt(1)
+                val hasFractalOrColorChange =
+                    lastState.fractalName != state.fractalName ||
+                            lastState.colorSchemeName != state.colorSchemeName ||
+                            lastState.iterationsOffset != state.iterationsOffset
+
+
+                val hasCoordinateChange =
+                    abs(lastState.plain.xMin - state.plain.xMin) > 1e-4 ||
+                            abs(lastState.plain.xMax - state.plain.xMax) > 1e-4 ||
+                            abs(lastState.plain.yMin - state.plain.yMin) > 1e-4 ||
+                            abs(lastState.plain.yMax - state.plain.yMax) > 1e-4
+
+                if (!hasFractalOrColorChange && !hasCoordinateChange) {
+                    return
+                }
+            }
+
+
         }
 
-        println("DEBUG: State saved. Undo stack: ${undoStack.size}, Redo stack: ${redoStack.size}")
+
+
+        undoStack.add(state)
+
+
+        if (undoStack.size > maxSteps) {
+            clear()
+        }
+
+
     }
 
     fun undo(): FractalState? {
         if (!canUndo()) {
-            println("DEBUG: Cannot undo. Stack size: ${undoStack.size}")
             return null
         }
 
         val currentState = undoStack.removeLast()
         redoStack.add(currentState)
 
-        val previousState = undoStack.last()
-
-        println("DEBUG: Undo performed.")
-        println("  Undo: ${undoStack.size}, Redo: ${redoStack.size}")
-
-        return previousState
+        return undoStack.last()
     }
 
     fun redo(): FractalState? {
         if (!canRedo()) {
-            println("DEBUG: Cannot redo. Redo stack: ${redoStack.size}")
             return null
         }
 
         val nextState = redoStack.removeLast()
         undoStack.add(nextState)
-
-        println("DEBUG: Redo performed.")
-        println("  Undo: ${undoStack.size}, Redo: ${redoStack.size}")
 
         return nextState
     }
@@ -91,7 +113,6 @@ class UndoManager(private val maxSteps: Int = 100) {
             undoStack.add(it)
         }
 
-        println("DEBUG: History cleared. Initial state restored.")
         return initialState
     }
 
@@ -103,6 +124,7 @@ class UndoManager(private val maxSteps: Int = 100) {
 
     fun getDetailedHistoryInfo(): String {
         val info = StringBuilder()
+        info.appendLine("=== ИСТОРИЯ ДЕЙСТВИЙ ===")
         info.appendLine("Назад (${undoStack.size - 1} доступно):")
         undoStack.forEachIndexed { index, state ->
             val prefix = if (index == 0) "Начальное: " else "Шаг ${index}: "
@@ -112,6 +134,7 @@ class UndoManager(private val maxSteps: Int = 100) {
         redoStack.reversed().forEachIndexed { index, state ->
             info.appendLine("  Шаг ${index + 1}: ${state.fractalName} - ${state.colorSchemeName}")
         }
+        info.appendLine("=== КОНЕЦ ИСТОРИИ ===")
         return info.toString()
     }
 }

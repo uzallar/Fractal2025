@@ -103,7 +103,7 @@ object FractalFunctions {
             "mandelbrot", "мандельброт" -> mandelbrot
             "julia", "жюлиа" -> julia
             "tricorn", "трикорн" -> tricorn
-            //"cubic", "кубический" -> cubicMandelbrot
+            "cubic", "кубический" -> cubicMandelbrot
             else -> mandelbrot
         }
     }

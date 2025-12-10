@@ -19,11 +19,15 @@ import app.history.UndoManager
 import app.tour.FractalTour
 import app.tour.TourFrame
 import app.utils.ExporterJPG
+import app.utils.FractalSaving
 import app.utils.SoundPlayer
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
+import java.awt.FileDialog
+import java.awt.Frame
+import javax.swing.JOptionPane
 
 
 class MainViewModel {
@@ -257,7 +261,6 @@ class MainViewModel {
             updateZoomLevel()
             mustRepaint = true
             delay(16)
-            System.gc()
         }
 
         if (end.fractalName != currentFractalName) setFractalByName(end.fractalName)
@@ -276,7 +279,7 @@ class MainViewModel {
             plain = plain,
             fractalName = currentFractalName,
             colorSchemeName = currentColorSchemeName,
-            iterationsOffset = iterationsOffset
+            iterationsOffset = iterationsOffset,
         )
         updateHistoryInfo()
     }
@@ -312,8 +315,18 @@ class MainViewModel {
         currentColorSchemeName = state.colorSchemeName
 
         updateFractalPainterWithState(state)
-        updateZoomLevel()
+        updateZoomTextFromLevel()
         mustRepaint = true
+    }
+    private fun updateZoomTextFromLevel() {
+        zoomText = when {
+            zoomLevel >= 1_000_000 -> String.format("%.1fMx", zoomLevel / 1_000_000)
+            zoomLevel >= 1_000 -> String.format("%.1fKx", zoomLevel / 1_000)
+            zoomLevel >= 100 -> String.format("%.0fx", zoomLevel)
+            zoomLevel >= 10 -> String.format("%.1fx", zoomLevel)
+            zoomLevel >= 1 -> String.format("%.2fx", zoomLevel)
+            else -> String.format("%.4fx", zoomLevel)
+        }
     }
 
     private fun updateFractalPainterWithState(state: app.history.FractalState) {
@@ -375,7 +388,7 @@ class MainViewModel {
                 plain.yMax = currentCenterY + newHeight / 2
             }
 
-            updateZoomLevel(isSoundOn = true)
+            updateZoomLevel()
             mustRepaint = true
         }
 
@@ -383,7 +396,7 @@ class MainViewModel {
         lastWindowHeight = newHeight
     }
 
-    private fun updateZoomLevel(isSoundOn: Boolean = false) {
+    private fun updateZoomLevel() {
         val initialWidth = initialXMax - initialXMin
         val currentWidth = plain.xMax - plain.xMin
         val oldZoom = zoomLevel
@@ -400,7 +413,7 @@ class MainViewModel {
         }
         mustRepaint = true
 
-        if (((zoomLevel / oldZoom) > 1.05 || (oldZoom / zoomLevel) > 1.05) && isSoundOn) {
+        if ((zoomLevel / oldZoom) > 1.05 || (oldZoom / zoomLevel) > 1.05) {
             SoundPlayer.zoom()
         }
     }
@@ -477,7 +490,7 @@ class MainViewModel {
                 plain.yMin = yMin
                 plain.yMax = yMax
 
-                updateZoomLevel(isSoundOn = true)
+                updateZoomLevel()
                 mustRepaint = true
             }
         }
@@ -492,7 +505,6 @@ class MainViewModel {
 
     fun setMandelbrot() {
         resetPanFlag()
-        resetPanFlag()
         saveCurrentState()
         fractalPainter = fractalPainter.withFractal(FractalFunctions.mandelbrot)
         currentFractalName = "Мандельброт"
@@ -500,7 +512,6 @@ class MainViewModel {
     }
 
     fun setJulia() {
-        resetPanFlag()
         resetPanFlag()
         saveCurrentState()
         fractalPainter = fractalPainter.withFractal(FractalFunctions.julia)
@@ -510,7 +521,6 @@ class MainViewModel {
 
     fun setTricorn() {
         resetPanFlag()
-        resetPanFlag()
         saveCurrentState()
         fractalPainter = fractalPainter.withFractal(FractalFunctions.tricorn)
         currentFractalName = "Трикорн"
@@ -518,7 +528,6 @@ class MainViewModel {
     }
 
     fun setStandardColors() {
-        resetPanFlag()
         resetPanFlag()
         saveCurrentState()
         fractalPainter = fractalPainter.withColorScheme(ColorSchemes.standard)
@@ -528,7 +537,6 @@ class MainViewModel {
 
     fun setFireColors() {
         resetPanFlag()
-        resetPanFlag()
         saveCurrentState()
         fractalPainter = fractalPainter.withColorScheme(ColorSchemes.fire)
         currentColorSchemeName = "Огненная"
@@ -536,7 +544,6 @@ class MainViewModel {
     }
 
     fun setRainbowColors() {
-        resetPanFlag()
         resetPanFlag()
         saveCurrentState()
         fractalPainter = fractalPainter.withColorScheme(ColorSchemes.rainbow)
@@ -546,7 +553,6 @@ class MainViewModel {
 
     fun setIceColors() {
         resetPanFlag()
-        resetPanFlag()
         saveCurrentState()
         fractalPainter = fractalPainter.withColorScheme(ColorSchemes.ice)
         currentColorSchemeName = "Ледяная"
@@ -554,7 +560,7 @@ class MainViewModel {
     }
 
     fun handlePan(delta: Offset) {
-        // Если еще не начали панорамировать - сохраняем состояние
+
         if (!isPanning) {
             saveCurrentState()
             isPanning = true
@@ -569,16 +575,26 @@ class MainViewModel {
         plain.yMin -= dy * yRange
         plain.yMax -= dy * yRange
 
-        // Воспроизводим звук сдвига
+
         SoundPlayer.pan()
 
-        updateZoomLevel(isSoundOn = true)
+        updateZoomLevel()
         mustRepaint = true
     }
 
-    // Добавляем метод для сброса (можно вызывать при любом другом действии)
+    fun finishPanning() {
+        if (isPanning) {
+            isPanning = false
+            saveCurrentState()
+            updateHistoryInfo()
+        }
+    }
     private fun resetPanFlag() {
-        isPanning = false
+        if (isPanning) {
+            finishPanning()
+        } else {
+            isPanning = false
+        }
     }
 
 
@@ -718,5 +734,31 @@ class MainViewModel {
             zoomText = zoomText,
             maxIterations = maxIterations
         )
+    }
+
+    fun updateTypeColorZoom(colorName:String,fractalName: String,plain: Plain,zoomLevel:Double) {
+        resetPanFlag()
+        saveCurrentState()
+        this.plain.xMin = plain.xMin
+        this.plain.xMax = plain.xMax
+        this.plain.yMin = plain.yMin
+        this.plain.yMax = plain.yMax
+        fractalPainter = FractalPainter(
+            this.plain,
+            FractalFunctions.getFractalByName(fractalName),
+            ColorSchemes.getColorSchemeByName(colorName)
+        )
+        currentFractalName = fractalName
+        currentColorSchemeName = colorName
+        this.zoomLevel = zoomLevel
+        zoomText = when {
+            zoomLevel >= 1_000_000 -> String.format("%.1fMx", zoomLevel / 1_000_000)
+            zoomLevel >= 1_000 -> String.format("%.1fKx", zoomLevel / 1_000)
+            zoomLevel >= 100 -> String.format("%.0fx", zoomLevel)
+            zoomLevel >= 10 -> String.format("%.1fx", zoomLevel)
+            zoomLevel >= 1 -> String.format("%.2fx", zoomLevel)
+            else -> String.format("%.4fx", zoomLevel)
+        }
+        mustRepaint = true
     }
 }

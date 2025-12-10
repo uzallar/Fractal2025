@@ -57,8 +57,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import app.painting.convertation.Plain
 import app.tour.TourFrame
+import app.utils.FractalSaving
 import app.viewmodels.MainViewModel
 import kotlinx.coroutines.launch
+import java.awt.FileDialog
+import java.awt.Frame
+import java.io.File
+import javax.swing.JOptionPane
 
 @Composable
 fun PaintPanel(
@@ -317,7 +322,27 @@ fun FractalControlPanel(
                 FractalButton("Жюлиа", enabled = !(viewModel.isRecordingTour || viewModel.isTourRunning)) { viewModel.setJulia() }
                 FractalButton("Трикорн", enabled = !(viewModel.isRecordingTour || viewModel.isTourRunning)) { viewModel.setTricorn() }
                 Button(
-                    onClick = { /* TODO */ },
+                    onClick = {
+                        val dialog = FileDialog(null as Frame?, "Выберите файл", FileDialog.LOAD)
+                        dialog.isVisible = true
+                        val file = dialog.file
+                        val dir = dialog.directory
+                        if (file != null && dir != null) {
+                            val save = FractalSaving()
+                            try {
+                                save.loadFractalObject(dir, file)
+                                viewModel.updateTypeColorZoom(save.color,save.fractalName,save.plain,save.zoomLevel)
+                            }
+                            catch (_: Exception) {
+                                JOptionPane.showMessageDialog(
+                                    null,                // родительское окно (null = центр экрана)
+                                    "Файл не найден",             // текст сообщения
+                                    "Сообщение",         // заголовок окна
+                                    JOptionPane.INFORMATION_MESSAGE // тип иконки
+                                )
+                            }
+                        }
+                    },
                     modifier = Modifier.fillMaxWidth(),
                     colors = ButtonDefaults.buttonColors(backgroundColor = ButtonColor, contentColor = Color.White),
                     shape = MaterialTheme.shapes.small,
@@ -345,9 +370,27 @@ fun FractalControlPanel(
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 Text("Сохранить как:", color = TextDark, fontWeight = FontWeight.Medium, fontSize = 15.sp)
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Button(onClick = { }, modifier = Modifier.weight(1f).height(40.dp),
+                    Button(onClick = {
+                        val fd = FileDialog(null as Frame?, "Сохранить файл", FileDialog.SAVE)
+                        fd.isVisible = true
+                        if (fd.file != null) {
+                            var filename = fd.file
+                            var file: File? = null
+                            // если пользователь не добавил расширение вручную — добавим
+                            if (!filename.endsWith(".fractal")) filename = "$filename.fractal"
+                            if (fd.directory.endsWith('/')) filename = "/$filename"
+                            file = File(fd.directory + filename)
+                            val save = FractalSaving(
+                                viewModel.currentFractalName,
+                                viewModel.currentColorSchemeName,
+                                viewModel.currentPlain,
+                                viewModel.zoomLevel
+                            )
+                            save.saveFractalObject(file)
+                        }
+                    }, modifier = Modifier.weight(1f).height(40.dp),
                         colors = ButtonDefaults.buttonColors(backgroundColor = ButtonColor, contentColor = Color.White)) {
-                        Text("Fractal", fontSize = 13.sp, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
+                        Text(".fract", fontSize = 13.sp, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth(),)
                     }
                     Button(
                         onClick = { viewModel.saveAsJpg() },
