@@ -25,9 +25,9 @@ class ColorSchemesTest {
     }
 
     @Test
-    fun `getColorSchemeByName returns cosmic`() {
-        val scheme = ColorSchemes.getColorSchemeByName("cosmic")
-        assertEquals(ColorSchemes.cosmic, scheme)
+    fun `getColorSchemeByName returns ice`() {
+        val scheme = ColorSchemes.getColorSchemeByName("ice")
+        assertEquals(ColorSchemes.ice, scheme)
     }
 
     @Test

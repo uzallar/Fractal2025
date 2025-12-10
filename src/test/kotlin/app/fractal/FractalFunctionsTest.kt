@@ -18,11 +18,6 @@ class FractalFunctionsTest {
         assertEquals(FractalFunctions.julia, f)
     }
 
-    @Test
-    fun `getFractalByName returns BurningShip`() {
-        val f = FractalFunctions.getFractalByName("burningship")
-        assertEquals(FractalFunctions.burningShip, f)
-    }
 
     @Test
     fun `getFractalByName returns Tricorn`() {

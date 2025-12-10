@@ -31,7 +31,7 @@ class MainViewModelColorChangeTestTest {
     @Test
     fun `setCosmicColors updates color scheme name`() {
         val vm = MainViewModel()
-        vm.setCosmicColors()
-        assertEquals("Космическая", vm.currentColorSchemeName)
+        vm.setIceColors()
+        assertEquals("Ледяная", vm.currentColorSchemeName)
     }
 }

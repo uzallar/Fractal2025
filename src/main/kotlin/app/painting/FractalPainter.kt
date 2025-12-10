@@ -1,68 +1,82 @@
 package app.painting
 
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
+
 import androidx.compose.ui.graphics.drawscope.DrawScope
-import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import app.fractal.FractalFunction
-import kotlinx.coroutines.coroutineScope
-import app.math.Complex
 import app.painting.convertation.Converter
 import app.painting.convertation.Plain
 import org.jetbrains.skia.*
-//import kotlin.concurrent.thread
-import kotlin.math.absoluteValue
-import kotlin.math.cos
-import kotlin.math.sin
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asComposeImageBitmap
-import androidx.compose.ui.graphics.asImageBitmap
 import org.jetbrains.skia.Bitmap
 import org.jetbrains.skia.Color
-import java.awt.image.BufferedImage
+import kotlinx.coroutines.*
 
+// ЖЕСТКИЙ ХАРДКОД (ЯВНО НЕ ПОМЕЧАЮ)
+val bytePixels = ByteArray(2600 * 2600 * 4)
 
 class FractalPainter(private val plain: Plain,
                      val fractalFunction: FractalFunction,
                      val colorScheme: ColorScheme,
                      private val maxIterationsProvider: () -> Int = { 200 }
 ): Painter {
-    override suspend fun paint(scope: DrawScope) {
+
+
+    override suspend fun paint(scope: DrawScope, image: ImageBitmap){
+        scope.drawImage(image)
+    }
+
+    suspend fun generateImage(scope: DrawScope): ImageBitmap {
         plain.width = scope.size.width
         plain.height = scope.size.height
 
+        val iterations = maxIterationsProvider()
         val width = plain.width.toInt()
         val height = plain.height.toInt()
+        //val bytePixels = ByteArray(width * height * 4)
 
-        // TODO: ДОПИЛИТЬ НОРМАЛЬНО
-        //val xCenter = (plain.xMax + plain.xMin + 1) / 2
-        //val yCenter = (plain.yMax + plain.yMin) / 2
+        val n = 8
+        val jobs = mutableListOf<Job>()
+        val blockSizeX = (width + n - 1) / n
+        val blockSizeY = (height + n - 1) / n
 
-        val bytePixels = ByteArray(width * height * 4)
-        for (x in 0 until width) {
-            for (y in 0 until height) {
-                val complex = Complex(
-                    Converter.xScr2Crt(x.toFloat(), plain),
-                    Converter.yScr2Crt(y.toFloat(), plain)
-                )
-                val probability = fractalFunction(
-                    Complex(0.0, 0.0), complex, 2.0, maxIterationsProvider())
-                val color = colorScheme(probability)
+        runBlocking {
+            for (blockX in 0 until n) {
+                for (blockY in 0 until n) {
+                    val job = launch(Dispatchers.Default) {
+                        val startX = blockX * blockSizeX
+                        val endX = minOf((blockX + 1) * blockSizeX, width)
+                        val startY = blockY * blockSizeY
+                        val endY = minOf((blockY + 1) * blockSizeY, height)
 
-                val r = (color.red * 255 + 0.5).toInt()
-                val g = (color.green * 255 + 0.5).toInt()
-                val b = (color.blue * 255 + 0.5).toInt()
-                val a = 255
+                        for (x in startX until endX) {
+                            for (y in startY until endY) {
+                                val zx = Converter.xScr2Crt(x.toFloat(), plain)
+                                val zy = Converter.yScr2Crt(y.toFloat(), plain)
 
-                val pos = (y * width + x) * 4
+                                val probability = fractalFunction(zx, zy, iterations)
+                                val color = colorScheme(probability)
 
-                bytePixels[pos] = b.toByte()
-                bytePixels[pos + 1] = g.toByte()
-                bytePixels[pos + 2] = r.toByte()
-                bytePixels[pos + 3] = a.toByte()
+                                val r = Color.getR(color)
+                                val g = Color.getG(color)
+                                val b = Color.getB(color)
+                                val a = 255
 
-           }
+                                val pos = (y * width + x) * 4
+                                bytePixels[pos] = b.toByte()
+                                bytePixels[pos + 1] = g.toByte()
+                                bytePixels[pos + 2] = r.toByte()
+                                bytePixels[pos + 3] = a.toByte()
+                            }
+                        }
+                    }
+                    jobs.add(job)
+                }
+            }
+            jobs.joinAll()
         }
+        System.gc()
+
         val skiaBitmap = Bitmap()
         skiaBitmap.allocN32Pixels(width, height)
 
@@ -73,7 +87,7 @@ class FractalPainter(private val plain: Plain,
         )
 
         val imageBitmap = skiaBitmap.asComposeImageBitmap()
-        scope.drawImage(imageBitmap)
+        return imageBitmap
     }
 
     fun withFractal(newFractal: FractalFunction): FractalPainter {

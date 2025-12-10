@@ -313,7 +313,6 @@ fun FractalControlPanel(
                 Text("Фракталы:", color = TextDark, fontWeight = FontWeight.Medium, fontSize = 15.sp)
                 FractalButton("Мандельброт") { viewModel.setMandelbrot() }
                 FractalButton("Жюлиа") { viewModel.setJulia() }
-                FractalButton("Горящий корабль") { viewModel.setBurningShip() }
                 FractalButton("Трикорн") { viewModel.setTricorn() }
 
                 Button(
@@ -335,7 +334,7 @@ fun FractalControlPanel(
                 ColorSchemeButton("Стандартная") { viewModel.setStandardColors() }
                 ColorSchemeButton("Огненная") { viewModel.setFireColors() }
                 ColorSchemeButton("Радужная") { viewModel.setRainbowColors() }
-                ColorSchemeButton("Космическая") { viewModel.setCosmicColors() }
+                ColorSchemeButton("Ледяная") { viewModel.setIceColors() }
             }
 
             Divider(color = SoftPink, thickness = 1.dp)
@@ -348,8 +347,11 @@ fun FractalControlPanel(
                         colors = ButtonDefaults.buttonColors(backgroundColor = ButtonColor, contentColor = Color.White)) {
                         Text("Fractal", fontSize = 13.sp, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
                     }
-                    Button(onClick = { }, modifier = Modifier.weight(1f).height(40.dp),
-                        colors = ButtonDefaults.buttonColors(backgroundColor = ButtonColor, contentColor = Color.White)) {
+                    Button(
+                        onClick = { viewModel.saveAsJpg() },
+                        modifier = Modifier.weight(1f).height(40.dp),
+                        colors = ButtonDefaults.buttonColors(backgroundColor = ButtonColor, contentColor = Color.White)
+                    ) {
                         Text("JPG", fontSize = 13.sp, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
                     }
                 }
